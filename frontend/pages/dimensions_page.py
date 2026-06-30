@@ -6,25 +6,20 @@ import requests
 # =========================
 API_BASE_URL = "http://localhost:8000" 
 
-
 # ========================= 
 # API HELPERS
 # =========================
 def set_project_dimensions(project_id, dim_list):
     payload = {"dimensions_list": dim_list}
-    res = requests.post(f"{API_BASE_URL}/projects/{project_id}/dimensions",json=payload)
-    return res.json()
+    response = requests.post(f"{API_BASE_URL}/projects/{project_id}/dimensions",json=payload)
+    response.raise_for_status()
+    return response.json()
 
 
 def get_project_dimensions(project_id):
-    res = requests.get(f"{API_BASE_URL}/projects/{project_id}/dimensions")
-    return res.json()
-
-
-# def delete_dimension(project_id, dimension_id):
-#     res = requests.delete(f"{API_BASE_URL}/projects/{project_id}/dimensions/{dimension_id}")
-#     return res.json()
-
+    response = requests.get(f"{API_BASE_URL}/projects/{project_id}/dimensions")
+    response.raise_for_status()
+    return response.json()
 
 # =========================
 # UI
@@ -40,7 +35,6 @@ menu = st.sidebar.selectbox(
         "View All Project Dimensions"
     ],
 )
-
 
 # =========================
 # 1. SET PROJECT DIMENSIONS 
@@ -88,8 +82,16 @@ if menu == "Set Project Dimensions":
                 # Clear list after saving
                 st.session_state.dim_list = []
 
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please enter Project ID and add at least one dimension.")
 
@@ -114,30 +116,15 @@ elif menu == "View All Project Dimensions":
                 else:
                     st.json(result)
 
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please enter Project ID")
-
-
-# =========================
-# 3. DELETE DIMENSION
-# =========================
-# elif menu == "Delete Dimension":
-#     st.subheader("🗑️ Delete Project Dimension")
-
-#     project_id = st.text_input("Project ID")
-#     dimension_id = st.text_input("Dimension ID")
-
-#     if st.button("Delete Dimension"):
-#         if project_id and dimension_id:
-#             try:
-#                 result = delete_dimension(project_id, dimension_id)
-
-#                 st.success("Dimension deleted successfully!")
-#                 st.json(result)
-
-#             except Exception as e:
-#                 st.error(f"Error: {e}")
-#         else:
-#             st.warning("Please enter Project ID and Dimension ID")

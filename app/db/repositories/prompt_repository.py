@@ -1,118 +1,236 @@
-from app.db.connection import cur , conn
+from app.db.connection import get_db_connection
 
 def get_latest_prompt(agent_id: int):
-    cur.execute(
-        """
-        SELECT *
-        FROM prompt
-        WHERE agent_id = %s
-        ORDER BY version DESC
-        LIMIT 1;
-        """,
-        (agent_id,)
-    )
-    return cur.fetchone()
+    try:
+        conn, cur = get_db_connection()
+
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            """
+            SELECT *
+            FROM prompt
+            WHERE agent_id = %s
+            ORDER BY version DESC
+            LIMIT 1;
+            """,
+            (agent_id,)
+        )
+        return cur.fetchone()
+
+    except Exception as e:
+        raise Exception(f"Failed to fetch latest prompt: {e}")
+
+    finally:
+        cur.close()
+        conn.close()
+
 
 def get_latest_prompt_version(agent_id: int):
-    cur.execute(
-        """
-        SELECT version
-        FROM prompt
-        WHERE agent_id = %s
-        ORDER BY version DESC
-        LIMIT 1;
-        """,
-        (agent_id,)
-    )
-    result = cur.fetchone()
-    if result is None:
-        return 0  
+    try:
+        conn, cur = get_db_connection()
 
-    return result[0]
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            """
+            SELECT version
+            FROM prompt
+            WHERE agent_id = %s
+            ORDER BY version DESC
+            LIMIT 1;
+            """,
+            (agent_id,)
+        )
+        result = cur.fetchone()
+
+        if result is None:
+            return 0
+        
+        return result[0]
+
+    except Exception as e:
+        raise Exception(f"Failed to fetch latest prompt version: {e}")
+
+    finally:
+        cur.close()
+        conn.close()
+
 
 def get_prompt_count(agent_id: int):
-    cur.execute(
-        """
-        SELECT COUNT(*) AS prompt_count
-        FROM prompt
-        WHERE agent_id = %s;
-        """,
-        (agent_id,)
-    )
+    try:
+        conn, cur = get_db_connection()
 
-    result = cur.fetchone()
-    return result["prompt_count"]
-
-def create_new_prompt(agent_id: int,prompt: str):
-    version = get_latest_prompt_version(agent_id) + 1
-    cur.execute(
-        """
-        INSERT INTO prompt (
-            agent_id,
-            prompt,
-            version
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            """
+            SELECT COUNT(*) AS prompt_count
+            FROM prompt
+            WHERE agent_id = %s;
+            """,
+            (agent_id,)
         )
-        VALUES (%s, %s, %s)
-        RETURNING *;
-        """,
-        (agent_id, prompt, version)
-    )
-    new_prompt = cur.fetchone()
-    conn.commit()
-    return new_prompt
+
+        result = cur.fetchone()
+        return result[0]
+
+    except Exception as e:
+        raise Exception(f"Failed to fetch prompt count: {e}")
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+def create_new_prompt(agent_id: int, prompt: str):
+    try:
+        conn, cur = get_db_connection()
+
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        version = get_latest_prompt_version(agent_id) + 1
+
+        cur.execute(
+            """
+            INSERT INTO prompt (
+                agent_id,
+                prompt,
+                version
+            )
+            VALUES (%s, %s, %s)
+            RETURNING *;
+            """,
+            (agent_id, prompt, version)
+        )
+
+        new_prompt = cur.fetchone()
+        conn.commit()
+
+        return new_prompt
+
+    except Exception as e:
+        conn.rollback()
+        raise Exception(f"Failed to create prompt: {e}")
+
+    finally:
+        cur.close()
+        conn.close()
+
 
 def get_prompts_by_agent_id(agent_id: int):
-    cur.execute(
-        """ 
-        SELECT *
-        FROM prompt
-        WHERE agent_id = %s;
-        """,
-        (agent_id,)
-    )
-    result = cur.fetchone()
-    return result
+    try:
+        conn, cur = get_db_connection()
+
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            """
+            SELECT *
+            FROM prompt
+            WHERE agent_id = %s
+            ORDER BY version DESC;
+            """,
+            (agent_id,)
+        )
+
+        return cur.fetchall()
+
+    except Exception as e:
+        raise Exception(f"Failed to fetch prompts: {e}")
+
+    finally:
+        cur.close()
+        conn.close()
+
 
 def get_prompt_by_id(prompt_id: int):
-    cur.execute(
-        """
-        SELECT *
-        FROM prompt
-        WHERE prompt_id = %s;
-        """,
-        (prompt_id,)
-    )
+    try:
+        conn, cur = get_db_connection()
 
-    return cur.fetchone()
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            """
+            SELECT *
+            FROM prompt
+            WHERE prompt_id = %s;
+            """,
+            (prompt_id,)
+        )
 
-def update_prompt(prompt_id: int,prompt: str):
-    cur.execute(
-        """
-        UPDATE prompt
-        SET prompt = %s
-        WHERE prompt_id = %s
-        RETURNING *;
-        """,
-        (prompt, prompt_id)
-    )
+        return cur.fetchone()
 
-    updated_prompt = cur.fetchone()
-    conn.commit()
+    except Exception as e:
+        raise Exception(f"Failed to fetch prompt: {e}")
 
-    return updated_prompt
+    finally:
+        cur.close()
+        conn.close()
 
 
-def delete_prompt(prompt_id: int):
-    cur.execute(
-        """
-        DELETE FROM prompt
-        WHERE prompt_id = %s
-        RETURNING *;
-        """,
-        (prompt_id,)
-    )
+def update_prompt_by_id(prompt_id: int, prompt: str):
+    try:
+        conn, cur = get_db_connection()
 
-    deleted_prompt = cur.fetchone()
-    conn.commit()
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            """
+            UPDATE prompt
+            SET prompt = %s
+            WHERE prompt_id = %s
+            RETURNING *;
+            """,
+            (prompt, prompt_id)
+        )
 
-    return deleted_prompt
+        updated_prompt = cur.fetchone()
+        conn.commit()
+
+        return updated_prompt
+
+    except Exception as e:
+        conn.rollback()
+        raise Exception(f"Failed to update prompt: {e}")
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+def delete_prompt_by_id(prompt_id: int):
+    try:
+        conn, cur = get_db_connection()
+
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            """
+            DELETE FROM prompt
+            WHERE prompt_id = %s
+            RETURNING *;
+            """,
+            (prompt_id,)
+        )
+
+        deleted_prompt = cur.fetchone()
+        conn.commit()
+
+        return deleted_prompt
+
+    except Exception as e:
+        conn.rollback()
+        raise Exception(f"Failed to delete prompt: {e}")
+
+    finally:
+        cur.close()
+        conn.close()

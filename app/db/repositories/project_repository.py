@@ -1,27 +1,125 @@
-from app.db.connection import cur,conn
+from app.db.connection import get_db_connection
+
 
 def create_project(project_name: str):
-    cur.execute("INSERT INTO project (project_name) VALUES (%s) RETURNING *",(project_name,))
-    new_project = cur.fetchone()
-    conn.commit()
-    return new_project
+    try:
+        conn, cur = get_db_connection()
+
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            "INSERT INTO project (project_name) VALUES (%s) RETURNING *",
+            (project_name,)
+        )
+        project = cur.fetchone()
+        conn.commit()
+        return project
+
+    except Exception as e:
+        conn.rollback()
+        raise Exception(f"Failed to create project: {e}")
+
+    finally:
+        cur.close()
+        conn.close()
+
 
 def get_project_by_id(project_id: int):
-    cur.execute("SELECT * FROM project WHERE project_id = %s", (project_id,))
-    return cur.fetchone()
+    try:
+        conn, cur = get_db_connection()
+
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            "SELECT * FROM project WHERE project_id = %s",
+            (project_id,)
+        )
+        return cur.fetchone()
+
+    except Exception as e:
+        raise Exception(f"Failed to fetch project: {e}")
+
+    finally:
+        cur.close()
+        conn.close()
+
 
 def list_projects():
-    cur.execute("SELECT * FROM project ORDER BY created_at DESC")
-    return cur.fetchall()
+    try:
+        conn, cur = get_db_connection()
 
-# def get_project_by_name(project_name: str):
-#     ...
-  
-# def update_project_name(project_id: int, project_name: str):
-#     ...
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            "SELECT * FROM project ORDER BY created_at DESC"
+        )
+        return cur.fetchall()
 
-# def delete_project(project_id: int):
-#     ...
+    except Exception as e:
+        raise Exception(f"Failed to fetch projects: {e}")
 
-# def project_exists(project_id: int):
-#     ...
+    finally:
+        cur.close()
+        conn.close()
+
+
+def update_project_name(project_id: int, project_name: str):
+    try:
+        conn, cur = get_db_connection()
+
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            """
+            UPDATE project
+            SET project_name = %s
+            WHERE project_id = %s
+            RETURNING *
+            """,
+            (project_name, project_id)
+        )
+
+        project = cur.fetchone()
+        conn.commit()
+        return project
+
+    except Exception as e:
+        conn.rollback()
+        raise Exception(f"Failed to update project: {e}")
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+def delete_project_by_id(project_id: int):
+    try:
+        conn, cur = get_db_connection()
+
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            """
+            DELETE FROM project
+            WHERE project_id = %s
+            RETURNING *
+            """,
+            (project_id,)
+        )
+
+        project = cur.fetchone()
+        conn.commit()
+        return project
+
+    except Exception as e:
+        conn.rollback()
+        raise Exception(f"Failed to delete project: {e}")
+
+    finally:
+        cur.close()
+        conn.close()

@@ -9,7 +9,6 @@ def orchestrator(state : AgentState) -> AgentState:
     Input Validation using llm: 
     -> check given prompt -if not valid then give "False"
     -> check given chat -if not valid then give "False"
-    -> check the list of dimensions, -if any dimension not valid then remove from list    
     """
     logger.info("Node:orchestrator")
     try :
@@ -25,7 +24,7 @@ def orchestrator(state : AgentState) -> AgentState:
         if not llm:
             raise ValueError("LLM service is not available.")
 
-        orchestrator_prompt = prompt_orchestrator(state.prompt,state.chat,state.dimensions)
+        orchestrator_prompt = prompt_orchestrator(state.prompt,state.chat)
         structured_llm = llm.with_structured_output(OrchestratorResponse)
         result = structured_llm.invoke(orchestrator_prompt)
 
@@ -34,13 +33,8 @@ def orchestrator(state : AgentState) -> AgentState:
         
         if not result.is_chat_valid:
             raise ValueError("Provided chat are not Valid chat")
-        
-        if len(result.updated_dimensions) == 0:
-            raise ValueError("Provided all invalid dimensions")
 
-        return {
-            'dimemsions' : result.updated_dimensions
-        }
+        return {}
 
     except Exception as e:
         logger.error(f"error found in orchestrator node : {e}")
@@ -97,6 +91,9 @@ def worker(state : WorkerState) -> AgentState:
         worker_prompt = prompt_worker(state["prompt"],state["chat"],state["dimension"],description)
         structured_llm = llm.with_structured_output(WorkerResponse)
         result = structured_llm.invoke(worker_prompt)
+
+        # -> if llm change a in dimenssion name then , replce with original 
+        result.dimension = state["dimension"]
 
         return {
             "worker_output" : [result]

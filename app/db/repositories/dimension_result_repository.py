@@ -1,49 +1,38 @@
-from app.db.connection import cur,conn
+from app.db.connection import get_db_connection
 
-def create_dimension_result(tracking_id: int,dimension_id: int,score: int):
-    cur.execute(
-        """
-        INSERT INTO dimension_results (
-            tracking_id,
-            dimension_id,
-            score
+def create_dimension_result(tracking_id: int, dimension_id: int, score: int):
+    try:
+        conn, cur = get_db_connection()
+
+        if conn is None or cur is None:
+            raise Exception("Unable to connect to the database.")
+        
+        cur.execute(
+            """
+            INSERT INTO dimension_results (
+                tracking_id,
+                dimension_id,
+                score
+            )
+            VALUES (%s, %s, %s)
+            RETURNING *;
+            """,
+            (
+                tracking_id,
+                dimension_id,
+                score
+            )
         )
-        VALUES (%s, %s, %s)
-        RETURNING *;
-        """,
-        (
-            tracking_id,
-            dimension_id,
-            score
-        )
-    )
-    new_dimension_result = cur.fetchone()
-    conn.commit()
-    return new_dimension_result
 
-def get_result_by_id(
-    result_id: int
-):
-    ...
+        new_dimension_result = cur.fetchone()
+        conn.commit()
 
-def get_results_by_tracking_id(
-    tracking_id: int
-):
-    ...
+        return new_dimension_result
 
-def get_result_by_dimension(
-    tracking_id: int,
-    dimension_id: int
-):
-    ...
+    except Exception as e:
+        conn.rollback()
+        raise Exception(f"Failed to create dimension result: {e}")
 
-def update_dimension_score(
-    result_id: int,
-    score: int
-):
-    ...
-
-def delete_result(
-    result_id: int
-):
-    ...
+    finally:
+        cur.close()
+        conn.close()

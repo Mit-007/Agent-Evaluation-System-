@@ -1,10 +1,11 @@
 import streamlit as st
+import pandas as pd
 import requests
 
 # =========================
 # CONFIG
 # =========================
-API_BASE_URL = "http://localhost:8000"  # change this
+API_BASE_URL = "http://localhost:8000" 
 
 
 # =========================
@@ -12,23 +13,38 @@ API_BASE_URL = "http://localhost:8000"  # change this
 # =========================
 def create_prompt(agent_id, prompt_text):
     payload = {"prompt": prompt_text}
-    res = requests.post(f"{API_BASE_URL}/agents/{agent_id}/prompts", json=payload)
-    return res.json()
+    response = requests.post(f"{API_BASE_URL}/agents/{agent_id}/prompts", json=payload)
+    response.raise_for_status()
+    return response.json()
 
 
 def get_all_prompts(agent_id):
-    res = requests.get(f"{API_BASE_URL}/agents/{agent_id}/prompts")
-    return res.json()
+    response = requests.get(f"{API_BASE_URL}/agents/{agent_id}/prompts")
+    response.raise_for_status()
+    return response.json()
 
 
 def get_latest_prompt(agent_id):
-    res = requests.get(f"{API_BASE_URL}/agents/{agent_id}/prompts/latest")
-    return res.json()
+    response = requests.get(f"{API_BASE_URL}/agents/{agent_id}/prompts/latest")
+    response.raise_for_status()
+    return response.json()
 
 
 def get_prompt(prompt_id):
-    res = requests.get(f"{API_BASE_URL}/prompts/{prompt_id}")
-    return res.json()
+    response = requests.get(f"{API_BASE_URL}/prompts/{prompt_id}")
+    response.raise_for_status()
+    return response.json()
+
+def update_prompt(prompt_id,new_prompt):
+    payload = {"new_prompt": new_prompt}
+    response = requests.put(f"{API_BASE_URL}/prompts/{prompt_id}", json=payload)
+    response.raise_for_status()
+    return response.json()
+
+def delete_prompt(prompt_id):
+    response = requests.delete(f"{API_BASE_URL}/prompts/{prompt_id}")
+    response.raise_for_status()
+    return response.json()
 
 
 # =========================
@@ -63,9 +79,22 @@ if menu == "Create Prompt":
             try:
                 result = create_prompt(agent_id, prompt_text)
                 st.success("Prompt created successfully!")
-                st.json(result)
+                st.write("### Prompt Details")
+                st.write(f"**Prompt ID :** {result['prompt_id']}")
+                st.write(f"**Agent ID :** {result['agent_id']}")
+                st.write(f"**Prompt :** {result['prompt']}")
+                st.write(f"**Version :** {result['version']}")
+
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please fill all fields")
 
@@ -84,13 +113,22 @@ elif menu == "View All Prompts for Agent":
                 data = get_all_prompts(agent_id)
                 st.success("Prompts fetched successfully!")
 
-                if isinstance(data,list):
-                    st.table(data)
+                if "columns" in data and "rows" in data:
+                    df = pd.DataFrame(data["rows"], columns=data["columns"])
+                    st.table(df)
                 else:
                     st.json(data)
 
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please enter Agent ID")
 
@@ -108,9 +146,22 @@ elif menu == "View Latest Prompt":
             try:
                 result = get_latest_prompt(agent_id)
                 st.success("Latest prompt fetched successfully!")
-                st.json(result)
+                st.write("### Prompt Details")
+                st.write(f"**Prompt ID :** {result['prompt_id']}")
+                st.write(f"**Agent ID :** {result['agent_id']}")
+                st.write(f"**Prompt :** {result['prompt']}")
+                st.write(f"**Version :** {result['version']}")
+
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please enter Agent ID")
 
@@ -128,8 +179,94 @@ elif menu == "View Prompt Details":
             try:
                 result = get_prompt(prompt_id)
                 st.success("Prompt fetched successfully!")
-                st.json(result)
+                st.write("### Prompt Details")
+                st.write(f"**Prompt ID :** {result['prompt_id']}")
+                st.write(f"**Agent ID :** {result['agent_id']}")
+                st.write(f"**Prompt :** {result['prompt']}")
+                st.write(f"**Version :** {result['version']}")
+
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
+        else:
+            st.warning("Please enter Prompt ID")
+
+# =========================
+# 5. UPDATE PROMPT
+# =========================
+elif menu == "Update Prompt":
+    st.subheader("✏️ Update Prompt")
+
+    prompt_id = st.text_input("Prompt ID")
+    new_prompt = st.text_area("New Prompt Text")
+
+    if st.button("Update Prompt"):
+        if prompt_id and new_prompt:
+            try:
+                result = update_prompt(prompt_id, new_prompt)
+
+                st.success("Prompt updated successfully!")
+                st.write("### Updated Prompt Details")
+                st.write(f"**Prompt ID :** {result['prompt_id']}")
+                st.write(f"**Agent ID :** {result['agent_id']}")
+                st.write(f"**Prompt :** {result['prompt']}")
+                st.write(f"**Version :** {result['version']}")
+
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
+            except Exception as e:
+                st.error(f"Unexpected Error: {e}")
+
+        else:
+            st.warning("Please enter Prompt ID and New Prompt")
+
+# =========================
+# 6. DELETE PROMPT
+# =========================
+elif menu == "Delete Prompt":
+    st.subheader("🗑️ Delete Prompt")
+
+    prompt_id = st.text_input("Prompt ID")
+
+    if st.button("Delete Prompt"):
+        if prompt_id:
+            try:
+                result = delete_prompt(prompt_id)
+
+                st.success("Prompt deleted successfully!")
+
+                if result:
+                    st.write("### Deleted Prompt Details")
+                    st.write(f"**Prompt ID :** {result['prompt_id']}")
+                    st.write(f"**Agent ID :** {result['agent_id']}")
+                    st.write(f"**Prompt :** {result['prompt']}")
+                    st.write(f"**Version :** {result['version']}")
+                else:
+                    st.info("No data returned from API")
+
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
+            except Exception as e:
+                st.error(f"Unexpected Error: {e}")
+
         else:
             st.warning("Please enter Prompt ID")

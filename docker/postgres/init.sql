@@ -98,9 +98,7 @@ CREATE TABLE IF NOT EXISTS evaluation_tracking (
 
     input_chat TEXT NOT NULL,
 
-    output_response TEXT NOT NULL,
-
-    overall_score NUMERIC(5,2),
+    output_response JSONB NOT NULL,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

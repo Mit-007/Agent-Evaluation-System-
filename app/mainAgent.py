@@ -1,6 +1,7 @@
 from app.agent.agent import EvalAgent
 from app.core.logger import logger
 from tests.data.fake_data_function import *
+import uuid
 
 data = {
     "prompt" : get_prompt(),
@@ -12,7 +13,7 @@ data = {
 
 logger.info("Start the Graph")
 
-config = {"configurable": {"thread_id": "thread-1"}}
+config = {"configurable": {"thread_id": str(uuid.uuid4())}}
 
 result = EvalAgent.invoke(data,config)
 
@@ -34,19 +35,23 @@ print("--------------------")
 
 print(result['dimensions'])
 
-print("\n\n-----------------------")
-print("|✅ Worker_output :-  |")
-print("-----------------------")
-
-for out in result['worker_output']:
-    print(f"\n---{out.dimension}")
-    print(out.worker_llm_response)
-    print(out.benchmarkScore)
-
 print("\n\n------------------")
 print("|✅ response :-  |")
 print("------------------")
 
-print(result['response'])
+draft = result['response']
+print(draft)
+
+print("\n\n-----------------------------------")
+print("|✅ Deatailed evalution result :- |")
+print("-----------------------------------")
+
+for out in result['worker_output']:
+    print(f"\n---{out.dimension}")
+    print(out.benchmarkScore)
+    print("Reason : ",out.worker_llm_response['reason'])
+    print("chat issue : ",out.worker_llm_response['chat_issue'])
+    print("prompt issue : ",out.worker_llm_response['prompt_issue'])
+    print("recommended_prompt_improvements : ",out.worker_llm_response['recommended_prompt_improvements'])
 
 logger.info("End of Graph")

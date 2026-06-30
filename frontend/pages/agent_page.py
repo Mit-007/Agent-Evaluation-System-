@@ -1,40 +1,46 @@
 import streamlit as st
 import requests
+import pandas as pd
 
 # =========================
 # CONFIG
 # =========================
-API_BASE_URL = "http://localhost:8000"  # change to your backend URL
+API_BASE_URL = "http://localhost:8000"  
 
 
 # =========================
 # API HELPERS
 # =========================
 def get_agents(project_id):
-    res = requests.get(f"{API_BASE_URL}/projects/{project_id}/agents")
-    return res.json()
+    response= requests.get(f"{API_BASE_URL}/projects/{project_id}/agents")
+    response.raise_for_status()
+    return response.json()
 
 
 def create_agent(project_id, agent_name):
     payload = {"agent_name": agent_name}
-    res = requests.post(f"{API_BASE_URL}/projects/{project_id}/agents", json=payload)
-    return res.json()
+    response= requests.post(f"{API_BASE_URL}/projects/{project_id}/agents", json=payload)
+    response.raise_for_status()
+    return response.json()
 
 
 def get_agent(agent_id):
-    res = requests.get(f"{API_BASE_URL}/agents/{agent_id}")
-    return res.json()
+    response= requests.get(f"{API_BASE_URL}/agents/{agent_id}")
+    response.raise_for_status()
+    return response.json()
 
 
 def update_agent(agent_id, new_name):
     payload = {"agent_new_name": new_name}
-    res = requests.put(f"{API_BASE_URL}/agents/{agent_id}", json=payload)
-    return res.json()
+    response= requests.put(f"{API_BASE_URL}/agents/{agent_id}", json=payload)
+    response.raise_for_status()
+    return response.json()
 
 
 def delete_agent(agent_id):
-    res = requests.delete(f"{API_BASE_URL}/agents/{agent_id}")
-    return res.json()
+    response= requests.delete(f"{API_BASE_URL}/agents/{agent_id}")
+    response.raise_for_status()
+    return response.json()
 
 
 # =========================
@@ -69,14 +75,25 @@ if menu == "List Agents by Project":
             try:
                 data = get_agents(project_id)
                 st.success("Agents fetched successfully!")
+                st.markdown("### 🗂️ Agents Table")
 
-                if isinstance(data, list):
-                    st.table(data)
+                # If data is a list or tuple, display as a table
+                if "columns" in data and "rows" in data:
+                    df = pd.DataFrame(data["rows"], columns=data["columns"])
+                    st.table(df)         
                 else:
                     st.json(data)
 
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please enter Project ID")
 
@@ -95,9 +112,20 @@ elif menu == "Create Agent":
             try:
                 result = create_agent(project_id, agent_name)
                 st.success("Agent created successfully!")
-                st.json(result)
+                st.write("### Agent Details")
+                st.write(f"**Agent ID:** {result['agent_id']}")
+                st.write(f"**Agent Name:** {result['agent_name']}")
+                st.write(f"**Project ID:** {result['project_id']}")
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please fill all fields")
 
@@ -115,9 +143,20 @@ elif menu == "View Agent Details":
             try:
                 result = get_agent(agent_id)
                 st.success("Agent details fetched!")
-                st.json(result)
+                st.write("### Agent Details")
+                st.write(f"**Agent ID:** {result['agent_id']}")
+                st.write(f"**Agent Name:** {result['agent_name']}")
+                st.write(f"**Project ID:** {result['project_id']}")
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please enter Agent ID")
 
@@ -136,9 +175,20 @@ elif menu == "Update Agent":
             try:
                 result = update_agent(agent_id, new_name)
                 st.success("Agent updated successfully!")
-                st.json(result)
+                st.write("### Agent Details")
+                st.write(f"**Agent ID:** {result['agent_id']}")
+                st.write(f"**Agent Name:** {result['agent_name']}")
+                st.write(f"**Project ID:** {result['project_id']}")
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please fill all fields")
 
@@ -156,8 +206,19 @@ elif menu == "Delete Agent":
             try:
                 result = delete_agent(agent_id)
                 st.success("Agent deleted successfully!")
-                st.json(result)
+                st.write("### Agent Details")
+                st.write(f"**Agent ID:** {result['agent_id']}")
+                st.write(f"**Agent Name:** {result['agent_name']}")
+                st.write(f"**Project ID:** {result['project_id']}")
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
             except Exception as e:
-                st.error(f"Error: {e}")
+                st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please enter Agent ID")

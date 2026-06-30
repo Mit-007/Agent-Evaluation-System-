@@ -1,11 +1,12 @@
-def prompt_orchestrator(prompt,chat,dimensions):
+from app.core.constants import BENCHMARK_SCORE_UPPER_LIMIT , BENCHMARK_SCORE_LOWER_LIMIT
+
+def prompt_orchestrator(prompt,chat):
     return f"""
 You are an input validation specialist for an Agent Evaluation System.
-Your task is to validate three inputs:
+Your task is to validate two inputs:
 
 1. User Prompt: {prompt}
 2. Agent Chat History: {chat}
-3. Evaluation Dimensions List: {dimensions}
 
 You must determine whether each input is valid, meaningful, and suitable for evaluating an AI agent.
 
@@ -35,20 +36,6 @@ The chat history is valid if:
 * In multi-turn conversations, 
     If all conversations are invalid, return `False`.
     if any single conversation is valid, return `True`.
----
-
-### 3. Dimensions Validation
-
-Each dimension should represent a legitimate evaluation criterion for AI agent assessment.
-
-A dimension is invalid if:
-* It is random text.
-* It is meaningless.
-* It contains only numbers or symbols.
-* It is unrelated to evaluation criteria.
-
-* Always return same name of dimenasions , not change any single character
-# Return only the valid dimensions list.
 """
 
 def prompt_worker(prompt ,chat ,dimension, dimension_description):
@@ -73,65 +60,65 @@ Instructions:
 8. Cite specific examples, messages, or responses from the chat that support your evaluation.
 9. Explain why the issue affects the selected dimension.
 10. Suggest practical improvements that would improve the agent's performance for this dimension.
-11. Assign a benchmark score from 1 to 10, where:
-    * 1 = Very Poor
-    * 5 = Average
-    * 10 = Excellent
+11. Assign a benchmark score from {BENCHMARK_SCORE_LOWER_LIMIT} to {BENCHMARK_SCORE_UPPER_LIMIT}.
 
 Response Requirements:
-Provide a detailed evaluation covering:
-* Whether improvement is needed.
-* Why improvement is needed.
-* Evidence from the prompt.
-* Evidence from the chat history.
-* How the identified issues affect the selected dimension.
-* Recommended improvements.
-* Where the improvements should be applied.
-* A final benchmark score.
+1. Score
+   - Assign a benchmark score.
 
-(rule : Always return same name of dimenasions , not change any single character)
-Base your judgment only on the provided prompt, chat history, and dimension description.
+2. Reason for Score
+   - Clearly explain why this score was assigned.
+
+3. Chat Issues
+   - Identify every place in the chat where the agent failed to satisfy the selected evaluation dimension.
+   - Quote the exact response or relevant excerpt from the chat as evidence.
+   - Explain why this part violates or weakens the selected dimension.
+   - If no issues are found, return empty list
+
+4. Prompt Issues
+   - Determine whether any part of the prompt contributed to the identified issues.
+   - Quote the exact prompt text that may have caused the agent's behavior.
+   - Explain how this prompt text led to the issue.
+   - If the prompt is not responsible, give empty list.
+
+5. Recommended Prompt Improvements
+   - Provide clear, actionable improvements to the prompt that would reduce or eliminate the identified issues.
+   - Each recommendation should directly address one or more prompt issues.
+   - Avoid generic suggestions; propose specific prompt modifications that would help the agent perform better on this evaluation dimension.
 """
 
 def prompt_aggregator(worker_outputs):
     return f"""
-You are an Evaluation Report Aggregator.
-Your task is to combine and summarize the outputs from multiple evaluation workers into a single comprehensive evaluation report.
+You are an AI Evaluation Aggregator.
+Your task is to analyze the evaluation results produced by multiple evaluators and generate a single, natural, human-like summary.
 
-Input:
-* Worker Outputs: {worker_outputs}
+Evaluation Results:
+{worker_outputs}
 
-Each worker output contains:
-* Evaluation Dimension
-* Detailed Evaluation Summary
-* Benchmark Score
+## Instructions
 
-Instructions:
-1. Review all worker outputs.
-2. Create a single consolidated evaluation report.
-3. Organize the report dimension-wise.
-4. For each dimension:
-   * Mention the dimension name.
-   * Include the benchmark score.
-   * Summarize the worker's findings.
-   * Mention whether improvements are needed.
-   * mention the identified issues.
-   * mention the recommended improvements.
-5. Preserve important evidence and findings from the worker outputs.
-6. Do not remove critical observations made by the workers.
-7. Ensure the final report is clear, structured, and easy to read.
-8. Do not perform a new evaluation. Only aggregate and summarize the worker outputs.
-9. At the end of the report, provide:
-Response Format:
+Write one sentence or paragraph that summarizes the evaluation.
 
-In response mention new line with "\ n"
+Your summary should naturally cover:
 
-# Agent Evaluation Report
-## Dimension: <Dimension Name> (rule : Always return same name of dimenasions , not change any single character)
-Benchmark Score: <Score>/10
-Summary: <Dimension-wise evaluation summary>
-Improvement Required:
-<Yes/No>
-Issues Identified: <Issues found by the worker>
-Recommended Improvements: <Suggested improvements>
+* The overall evaluation outcome.
+* Whether the prompt needs improvement or not. If it does, briefly explain why.
+* Do not mention any specific problems or solutions. Only provide a summary that helps the user decide whether they need to read the detailed worker outputs.
+
+--> Response: -Always organize the response into headings or bullet points.
+              -give markdown response
+
+Write as if an experienced reviewer is giving concise feedback to another developer.
+
+Keep the response between 250 and 350 words.
+
+## Guidelines
+
+* Use a professional, objective, and conversational tone.
+* Produce summaries that are much easier for users to understand and Use simple, easy-to-understand English.
+* Write naturally, like human-written feedback.
+* Do not include implementation details.
+* Do not rewrite or improve the original prompt.
+* Do not include scores unless they are explicitly provided in the evaluation results.
+* Return only the final summary text.
 """
