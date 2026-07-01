@@ -19,10 +19,6 @@ with st.sidebar:
     elif st.button == "Evaluation":
         st.switch_page("evaluation_page")
 
-    elif st.button == "Analysis":
-        st.switch_page("analysis_page")
-
-
 st.set_page_config(
     page_title="Agent Evaluation System",
     page_icon="🤖",
@@ -169,13 +165,6 @@ with c5:
 📏 **Dimensions**
 
 Configure evaluation dimensions.
-""")
-
-with c6:
-    st.error("""
-📈 **Analysis**
-
-Analyze evaluation history.
 """)
 
 st.divider()

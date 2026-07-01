@@ -9,9 +9,9 @@ import uuid
 
 def performe_evalution(project_id: int, agent_id: int, chat: str):
     """
-    Perform an evaluation of the given agent based on the chat and prompt.
+    Perform an evaluation of the given agent, based on the chat and prompt.
     First, fetch the prompt and dimensions from the database.
-    Run the evaluation agent and retrieve the results.
+    Run the evaluation_agent and retrieve the results.
     Store the evaluation result in the tracking table and each dimension's result in the evaluation_result table.
     """
     try:

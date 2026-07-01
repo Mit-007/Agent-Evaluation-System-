@@ -1,3 +1,3 @@
-# --> set score Limits
+# --> set boundaries for score
 BENCHMARK_SCORE_UPPER_LIMIT = 10
 BENCHMARK_SCORE_LOWER_LIMIT = 1

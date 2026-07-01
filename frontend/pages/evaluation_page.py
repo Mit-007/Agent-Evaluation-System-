@@ -26,6 +26,11 @@ def get_all_evaluations_for_agent(agent_id):
     response.raise_for_status()
     return response.json()
 
+def get_latest_evaluation_for_agent(agent_id):
+    response = requests.get(f"{API_BASE_URL}/agents/{agent_id}/evaluations/latest")
+    response.raise_for_status()
+    return response.json()
+
 # =========================
 # UI
 # =========================
@@ -39,6 +44,7 @@ menu = st.sidebar.selectbox(
         "Run New Evaluation",
         "View Evaluation Result",
         "View All Evaluations for Agent",
+        "View latest Evaluation of Agent"
     ],
 )
 
@@ -152,7 +158,7 @@ elif menu == "View Evaluation Result":
 # 3. VIEW ALL EVALUATIONS FOR AGENT
 # =========================
 elif menu == "View All Evaluations for Agent":
-    st.subheader("📋 All Evaluations for Agent")
+    st.subheader("📋 ALL Evaluations for Agent")
 
     agent_id = st.text_input("Agent ID")
 
@@ -167,6 +173,58 @@ elif menu == "View All Evaluations for Agent":
                 else:
                     st.json(data)
 
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
+            except Exception as e:
+                st.error(f"Unexpected Error: {e}")
+        else:
+            st.warning("Please enter Agent ID")
+
+
+# =========================
+# 4. VIEW Latest EVALUATION FOR AGENT
+# =========================
+elif menu == "View latest Evaluation of Agent":
+    st.subheader("📋 Latest Evaluations for Agent")
+
+    agent_id = st.text_input("Agent ID")
+
+    if st.button("Fetch Evaluations"):
+        if agent_id:
+            try:
+                result = get_latest_evaluation_for_agent(agent_id)
+                st.success("Evaluations fetched successfully!")
+                st.success("Evaluation result fetched!")
+                st.header("✅ Response")
+                st.write("Tracking_ID : ",result.get('tracking_id',""))
+                st.write("Agent_ID : ",result.get("agent_id",""))
+                st.write("Prompt_ID : ",result.get("prompt_id",""))
+                st.write("Chat : ",result.get("chat",""))
+                st.header("✅ Detailed Evaluation Result")
+                st.write("Score : ",result.get("score","")) 
+                for out in result['output_response']["dimensions_result"]:
+                    with st.expander(f"📌 {out["dimension"]}", expanded=False):
+                        st.metric("Benchmark Score", out["benchmarkScore"])
+                        st.markdown("**Reason**")
+                        st.write(out["worker_llm_response"]["reason"])
+                        if len(out["worker_llm_response"]["chat_issue"])>0 :
+                            st.markdown("**Chat Issue**")
+                            for chat_issue in out["worker_llm_response"]["chat_issue"]:
+                                st.write(chat_issue['evidence'])
+                                st.write(chat_issue['explanation'])
+                        if len(out["worker_llm_response"]["prompt_issue"]) > 0:
+                            st.markdown("**Prompt Issue**")
+                            for prompt_issue in out["worker_llm_response"]["prompt_issue"]:
+                                st.write(prompt_issue['evidence'])
+                                st.write(prompt_issue['explanation'])
+                        st.markdown("**Recommended Prompt Improvements**")
+                        st.write(out["worker_llm_response"]["recommended_prompt_improvements"])
             except requests.exceptions.HTTPError as e:
                 try:
                     error = e.response.json().get("detail", "Unknown error")

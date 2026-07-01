@@ -17,5 +17,3 @@ def get_llm():
     except Exception as e:
         logger.error(f"Failed to initialize LLM: {e}")
         return  None
-
-llm = get_llm()

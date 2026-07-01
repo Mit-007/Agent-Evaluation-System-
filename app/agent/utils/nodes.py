@@ -1,7 +1,7 @@
 from langgraph.types import Send
 from app.core.logger import logger
 from app.agent.utils.state import *
-from app.services.llm_services import llm
+from app.services.llm_services import get_llm
 from app.services.prompt_evalAgent import *
 
 def orchestrator(state : AgentState) -> AgentState:
@@ -20,6 +20,8 @@ def orchestrator(state : AgentState) -> AgentState:
         
         if len(state.dimensions) == 0 :
             raise ValueError("Provide Empty Dimensions List")
+
+        llm = get_llm()
 
         if not llm:
             raise ValueError("LLM service is not available.")
@@ -84,6 +86,8 @@ def worker(state : WorkerState) -> AgentState:
     logger.info("Node:worker")
     try :
         description = "Ftech From DataBase"
+
+        llm = get_llm()
         
         if not llm:
             raise ValueError("LLM service is not available.")
@@ -113,6 +117,8 @@ def aggregator(state : AgentState) -> AgentState:
     try :
         if len(state.worker_output)==0:
             raise ValueError("Worker List is empty")
+        
+        llm = get_llm()
 
         if not llm:
             raise ValueError("LLM service is not available.")
