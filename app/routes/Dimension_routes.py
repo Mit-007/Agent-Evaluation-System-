@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.db.repositories.dimension_repository import *
 from app.db.repositories.project_dimension_repository import *
-from app.models.dimension_routes_model import SetDimensions
+from app.models.dimension_routes_model import SetDimensions,UpdateDimensions
 
 router = APIRouter(prefix="", tags=["Dimensions Routes"])
 
@@ -44,6 +44,58 @@ def view_project_dimensions(project_id: int):
             )
 
         return result
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+    
+@router.put("/dimensions/{dimension_id}")
+def update_project_dimensions(dimension_id: int,payload : UpdateDimensions):
+    try:
+        result = update_dimension_description(dimension_id,payload.new_dimension_description)
+
+        if not result:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No dimensions found with ID : {dimension_id}."
+            )
+
+        return {
+            "dimension_id" : result[0],
+            "dimension_name" : result [1],
+            "dimension_description" : result[2]
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+    
+@router.delete("/dimensions/{dimension_id}")
+def delete_project_dimensions(dimension_id: int):
+    try:
+        result = delete_dimension(dimension_id)
+
+        if not result:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No dimensions found with ID : {dimension_id}."
+            )
+
+        return {
+            "dimension_id" : result[0],
+            "dimension_name" : result [1],
+            "dimension_description" : result[2]
+        }
 
     except HTTPException:
         raise

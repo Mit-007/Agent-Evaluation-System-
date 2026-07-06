@@ -43,7 +43,8 @@ def orchestrator(state : AgentState) -> AgentState:
         return {
             'prompt' : "",
             'chat' : "",
-            'dimemsions' : []
+            'dimensions' : [],
+            'response' : f"Error Found , {e}"
         }
 
 
@@ -66,18 +67,30 @@ def route_worker(state : AgentState):
         return [
             Send(
                 "worker",
-                {
-                    "prompt" : state.prompt,
-                    "chat" : state.chat,
-                    "dimension" : dimension
-                }
+                WorkerState(
+                    prompt = state.prompt,
+                    chat = state.chat,
+                    dimension = dimension
+                )
             )
             for dimension in dimensions
         ]
 
     except Exception as e:
         logger.error(f"error found in route_worker node : {e}")
-        return []
+        return [
+            Send(
+                "worker",
+                WorkerState(
+                    prompt="",
+                    chat="",
+                    dimension={
+                        "dimension_name": "",
+                        "dimension_description": ""
+                    }                   
+                )
+            )
+        ]
 
 def worker(state : WorkerState) -> AgentState:
     """
@@ -85,19 +98,20 @@ def worker(state : WorkerState) -> AgentState:
     """
     logger.info("Node:worker")
     try :
-        description = "Ftech From DataBase"
+        if state.prompt == "" or state.chat == "" :
+            raise ValueError("Recieve a Invalid Inputs")
 
         llm = get_llm()
         
         if not llm:
             raise ValueError("LLM service is not available.")
         
-        worker_prompt = prompt_worker(state["prompt"],state["chat"],state["dimension"],description)
+        worker_prompt = prompt_worker(state.prompt,state.chat,state.dimension['dimension_name'],state.dimension["dimension_description"])
         structured_llm = llm.with_structured_output(WorkerResponse)
         result = structured_llm.invoke(worker_prompt)
 
         # -> if llm change a in dimenssion name then , replce with original 
-        result.dimension = state["dimension"]
+        result.dimension = state.dimension['dimension_name']
 
         return {
             "worker_output" : [result]
@@ -105,8 +119,19 @@ def worker(state : WorkerState) -> AgentState:
 
     except Exception as e:
         logger.error(f"Error in worker_DB_researcher: {e}")
+        worker_result = WorkerLlmResponseDict(
+            reason=f"Worker execution failed: {str(e)}",
+            chat_issue=[],
+            prompt_issue=[],
+            recommended_prompt_improvements=""
+        )
+        result = WorkerResponse (
+            dimension = state.dimension['dimension_name'],
+            worker_llm_response = worker_result,
+            benchmarkScore = 0 
+        )
         return{
-            "worker_output" : [{"dimension":state.dimension , "Error":f"{e}"}]
+            "worker_output" : [result]
         }
 
 def aggregator(state : AgentState) -> AgentState:
@@ -115,6 +140,9 @@ def aggregator(state : AgentState) -> AgentState:
     """
     logger.info("Node:aggregator")
     try :
+        if not state.prompt or not state.chat :
+            raise ValueError(f"{state.response}")
+
         if len(state.worker_output)==0:
             raise ValueError("Worker List is empty")
         
@@ -134,5 +162,5 @@ def aggregator(state : AgentState) -> AgentState:
         logger.error(f"Error in Aggregator node : {e}")
 
         return {
-            'response' : f"Error Found , {e}"
+            'response' : f"{e}"
         }

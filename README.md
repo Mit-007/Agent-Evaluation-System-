@@ -181,6 +181,8 @@ streamlit run frontend/main_page.py
 |---------|----------|-------------|
 | POST | `/projects/{project_id}/dimensions` | Set dimensions |
 | GET | `/projects/{project_id}/dimensions` | View dimensions |
+| PUT | `/dimensions/{dimension_id}` | Update Dimension |
+| DELETE | `/dimensions/{dimension_id}` | Delete Dimension |
 
 ---
 

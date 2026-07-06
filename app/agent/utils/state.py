@@ -37,12 +37,20 @@ class AggregatorResponse(BaseModel):
     aggregator_llm_response : str
 
 # ===========
+# Dimension Dict :
+# ==========
+
+class Dimension(TypedDict):
+    dimension_name : str
+    dimension_description : str
+
+# ===========
 # Worker State
 # ===========
 class WorkerState(BaseModel):
     prompt : str
     chat : str
-    dimension : str
+    dimension : Dimension
 
 # ============
 # Main Agent State
@@ -50,6 +58,6 @@ class WorkerState(BaseModel):
 class AgentState(BaseModel):
     prompt : str
     chat : str
-    dimensions : list[str]
+    dimensions : list[Dimension]
     worker_output : Annotated[list[WorkerResponse],operator.add]
     response : str 

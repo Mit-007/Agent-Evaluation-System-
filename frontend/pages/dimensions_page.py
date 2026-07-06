@@ -21,6 +21,20 @@ def get_project_dimensions(project_id):
     response.raise_for_status()
     return response.json()
 
+
+def update_dimension(dimension_id, new_description):
+    payload = {"new_dimension_description": new_description}
+    response= requests.put(f"{API_BASE_URL}/dimensions/{dimension_id}", json=payload)
+    response.raise_for_status() 
+    return response.json()
+
+
+def delete_dimension(dimension_id):
+    response= requests.delete(f"{API_BASE_URL}/dimensions/{dimension_id}")
+    response.raise_for_status()
+    return response.json()
+
+
 # =========================
 # UI
 # =========================
@@ -32,7 +46,9 @@ menu = st.sidebar.selectbox(
     "Choose Action",
     [
         "Set Project Dimensions",
-        "View All Project Dimensions"
+        "View All Project Dimensions",
+        "upadte Dimension discription",
+        "delete Dimension"
     ],
 )
 
@@ -79,7 +95,7 @@ if menu == "Set Project Dimensions":
                 else:
                     st.json(data)
 
-                # Clear list after saving
+                # --> Clear list after saving
                 st.session_state.dim_list = []
 
             except requests.exceptions.HTTPError as e:
@@ -128,3 +144,96 @@ elif menu == "View All Project Dimensions":
                 st.error(f"Unexpected Error: {e}")
         else:
             st.warning("Please enter Project ID")
+
+# =========================
+# 3. UPDATE DIMENSION
+# =========================
+elif menu == "upadte Dimension discription":
+    st.subheader("✏️ Update Dimension Description")
+
+    update_dimension_id = st.text_input(
+        "Dimension ID",
+        key="update_dimension_id"
+    )
+
+    new_dimension_description = st.text_area(
+        "New Dimension Description",
+        key="new_dimension_description"
+    )
+
+    if st.button("Update Dimension"):
+        if update_dimension_id and new_dimension_description:
+            try:
+                result = update_dimension(
+                    update_dimension_id,
+                    new_dimension_description
+                )
+
+                st.success("Dimension updated successfully!")
+
+                st.write("### Updated Dimension")
+
+                st.table([
+                    {
+                        "dimension_id": result["dimension_id"],
+                        "dimension_name": result["dimension_name"],
+                        "dimension_description": result["dimension_description"],
+                    }
+                ])
+
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
+            except Exception as e:
+                st.error(f"Unexpected Error: {e}")
+
+        else:
+            st.warning("Please enter Dimension ID and Description.")
+
+
+# =========================
+# 4. DELETE DIMENSION
+# =========================
+elif menu == "delete Dimension":
+    st.subheader("🗑️ Delete Dimension")
+
+    delete_dimension_id = st.text_input(
+        "Dimension ID",
+        key="delete_dimension_id"
+    )
+
+    if st.button("Delete Dimension"):
+        if delete_dimension_id:
+            try:
+                result = delete_dimension(delete_dimension_id)
+
+                st.success("Dimension deleted successfully!")
+
+                st.write("### Deleted Dimension")
+
+                st.table([
+                    {
+                        "dimension_id": result["dimension_id"],
+                        "dimension_name": result["dimension_name"],
+                        "dimension_description": result["dimension_description"],
+                    }
+                ])
+
+            except requests.exceptions.HTTPError as e:
+                try:
+                    error = e.response.json().get("detail", "Unknown error")
+                except:
+                    error = e.response.text
+
+                st.error(error)
+
+            except Exception as e:
+                st.error(f"Unexpected Error: {e}")
+
+        else:
+            st.warning("Please enter Dimension ID.")

@@ -7,3 +7,6 @@ class Dimension_schema(TypedDict):
 
 class SetDimensions(BaseModel):
     dimensions_list : list[Dimension_schema]
+
+class UpdateDimensions(BaseModel):
+    new_dimension_description : str

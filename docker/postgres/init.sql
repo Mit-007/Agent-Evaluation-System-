@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS dimension_results (
 
     dimension_id INTEGER NOT NULL,
 
-    score INTEGER NOT NULL CHECK (score BETWEEN 1 AND 10),
+    score INTEGER NOT NULL,
 
     CONSTRAINT fk_result_tracking
         FOREIGN KEY (tracking_id)
