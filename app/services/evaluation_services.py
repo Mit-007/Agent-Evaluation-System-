@@ -90,7 +90,7 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
 
         #  --> dict for store result in db, before store convert into json
         output_response = {
-            "score": overall_score / len(result["worker_output"]),
+            "score": overall_score / len(result["worker_output"]) if len(result["worker_output"]) > 0 else 0,
             "overall_assessment_summary": result["response"],
             "dimensions_result": dimensions_result,
         }

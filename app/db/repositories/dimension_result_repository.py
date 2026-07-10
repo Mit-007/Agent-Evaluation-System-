@@ -30,7 +30,8 @@ def create_dimension_result(tracking_id: int, dimension_id: int, score: int):
         return new_dimension_result
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to create dimension result: {e}")
 
     finally:

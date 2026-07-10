@@ -17,7 +17,8 @@ def create_project(project_name: str):
         return project
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to create project: {e}")
 
     finally:
@@ -83,7 +84,8 @@ def update_project_name(project_id: int, project_name: str):
         return project
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to update project: {e}")
 
     finally:
@@ -111,7 +113,8 @@ def delete_project_by_id(project_id: int):
         return project
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to delete project: {e}")
 
     finally:

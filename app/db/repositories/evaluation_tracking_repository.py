@@ -36,7 +36,8 @@ def create_evaluation_tracking(
         return tracking
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to create evaluation tracking: {e}")
 
     finally:
@@ -143,7 +144,8 @@ def delete_tracking(tracking_id: int):
         return deleted_tracking
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to delete evaluation tracking: {e}")
 
     finally:

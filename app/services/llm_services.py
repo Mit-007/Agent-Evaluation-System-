@@ -9,7 +9,7 @@ def get_llm():
 
         llm = ChatGoogleGenerativeAI(
             model=LLM_MODEL_NAME,
-            temperature=TEMPERATURE
+            temperature=float(TEMPERATURE)
         )
 
         return llm

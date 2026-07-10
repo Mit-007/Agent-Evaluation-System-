@@ -27,7 +27,8 @@ def assign_dimension_to_project(project_id: int, dimension_id: int):
         return result
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to assign dimension to project: {e}")
 
     finally:

@@ -26,7 +26,8 @@ def create_new_dimension(dimension_name: str, dimension_description: str):
         return new_dimension
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to create dimension: {e}")
 
     finally:
@@ -54,7 +55,8 @@ def update_dimension_description(dimension_id: int, dimension_description: str):
         return updated_dimension
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to update dimension description: {e}")
 
     finally:
@@ -81,7 +83,8 @@ def delete_dimension(dimension_id: int):
         return deleted_dimension
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to delete dimension: {e}")
 
     finally:

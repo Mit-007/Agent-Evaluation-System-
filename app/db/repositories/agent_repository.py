@@ -21,7 +21,8 @@ def create_new_agent(agent_name: str, project_id: int):
         return created_agent
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to create agent: {e}")
 
     finally:
@@ -100,7 +101,8 @@ def update_agent_name(agent_id: int, agent_name: str):
         return updated_agent
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to update agent: {e}")
 
     finally:
@@ -128,7 +130,8 @@ def delete_agent_by_id(agent_id: int):
         return deleted_agent
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to delete agent: {e}")
 
     finally:

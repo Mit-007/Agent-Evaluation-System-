@@ -110,7 +110,8 @@ def create_new_prompt(agent_id: int, prompt: str):
         return new_prompt
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to create prompt: {e}")
 
     finally:
@@ -190,7 +191,8 @@ def update_prompt_by_id(prompt_id: int, prompt: str):
         return updated_prompt
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to update prompt: {e}")
 
     finally:
@@ -219,7 +221,8 @@ def delete_prompt_by_id(prompt_id: int):
         return deleted_prompt
 
     except Exception as e:
-        conn.rollback()
+        if conn:
+            conn.rollback()
         raise Exception(f"Failed to delete prompt: {e}")
 
     finally:
