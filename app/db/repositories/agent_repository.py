@@ -25,8 +25,10 @@ def create_new_agent(agent_name: str, project_id: int):
         raise Exception(f"Failed to create agent: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def get_agent_by_id(agent_id: int):
@@ -50,8 +52,10 @@ def get_agent_by_id(agent_id: int):
         raise Exception(f"Failed to fetch agent: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def get_agents_by_project_id(project_id: int):
@@ -77,8 +81,10 @@ def get_agents_by_project_id(project_id: int):
         raise Exception(f"Failed to fetch agents: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def update_agent_name(agent_id: int, agent_name: str):
@@ -107,8 +113,10 @@ def update_agent_name(agent_id: int, agent_name: str):
         raise Exception(f"Failed to update agent: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def delete_agent_by_id(agent_id: int):
@@ -136,8 +144,10 @@ def delete_agent_by_id(agent_id: int):
         raise Exception(f"Failed to delete agent: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def get_project_id_by_agent_id(agent_id: int):

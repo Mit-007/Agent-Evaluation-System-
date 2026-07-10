@@ -31,8 +31,10 @@ def assign_dimension_to_project(project_id: int, dimension_id: int):
         raise Exception(f"Failed to assign dimension to project: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def get_dimensions_by_project_id(project_id: int):
@@ -63,5 +65,7 @@ def get_dimensions_by_project_id(project_id: int):
         raise Exception(f"Failed to fetch project dimensions: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()

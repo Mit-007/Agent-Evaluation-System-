@@ -34,5 +34,7 @@ def create_dimension_result(tracking_id: int, dimension_id: int, score: int):
         raise Exception(f"Failed to create dimension result: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()

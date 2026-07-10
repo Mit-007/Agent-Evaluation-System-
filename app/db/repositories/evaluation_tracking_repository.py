@@ -40,8 +40,10 @@ def create_evaluation_tracking(
         raise Exception(f"Failed to create evaluation tracking: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def get_tracking_by_id(tracking_id: int):
@@ -66,8 +68,10 @@ def get_tracking_by_id(tracking_id: int):
         raise Exception(f"Failed to fetch evaluation tracking: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def get_tracking_by_agent_id(agent_id: int):
@@ -93,8 +97,10 @@ def get_tracking_by_agent_id(agent_id: int):
         raise Exception(f"Failed to fetch agent evaluation history: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def get_latest_tracking(agent_id: int):
@@ -121,8 +127,10 @@ def get_latest_tracking(agent_id: int):
         raise Exception(f"Failed to fetch latest evaluation tracking: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def delete_tracking(tracking_id: int):
@@ -151,5 +159,7 @@ def delete_tracking(tracking_id: int):
         raise Exception(f"Failed to delete evaluation tracking: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()

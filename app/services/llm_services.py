@@ -1,5 +1,5 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
-from app.core.config import GOOGLE_API_KEY
+from app.core.config import GOOGLE_API_KEY, LLM_MODEL_NAME,TEMPERATURE
 from app.core.logger import logger
 
 def get_llm():
@@ -8,8 +8,8 @@ def get_llm():
             raise ValueError("GOOGLE_API_KEY is missing. Please set it in your .env file.")
 
         llm = ChatGoogleGenerativeAI(
-            model="gemini-3.1-flash-lite",
-            temperature=0
+            model=LLM_MODEL_NAME,
+            temperature=TEMPERATURE
         )
 
         return llm

@@ -21,8 +21,10 @@ def create_project(project_name: str):
         raise Exception(f"Failed to create project: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def get_project_by_id(project_id: int):
@@ -42,9 +44,10 @@ def get_project_by_id(project_id: int):
         raise Exception(f"Failed to fetch project: {e}")
 
     finally:
-        cur.close()
-        conn.close()
-
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 def list_projects():
     try:
@@ -62,9 +65,10 @@ def list_projects():
         raise Exception(f"Failed to fetch projects: {e}")
 
     finally:
-        cur.close()
-        conn.close()
-
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 def update_project_name(project_id: int, project_name: str):
     try:
@@ -92,8 +96,10 @@ def update_project_name(project_id: int, project_name: str):
         raise Exception(f"Failed to update project: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 
 def delete_project_by_id(project_id: int):
@@ -121,5 +127,7 @@ def delete_project_by_id(project_id: int):
         raise Exception(f"Failed to delete project: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()

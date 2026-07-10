@@ -30,8 +30,10 @@ def create_new_dimension(dimension_name: str, dimension_description: str):
         raise Exception(f"Failed to create dimension: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 def update_dimension_description(dimension_id: int, dimension_description: str):
     try:
@@ -59,8 +61,10 @@ def update_dimension_description(dimension_id: int, dimension_description: str):
         raise Exception(f"Failed to update dimension description: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 def delete_dimension(dimension_id: int):
     try:
@@ -87,5 +91,7 @@ def delete_dimension(dimension_id: int):
         raise Exception(f"Failed to delete dimension: {e}")
 
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()

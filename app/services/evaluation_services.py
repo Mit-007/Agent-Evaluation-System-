@@ -14,8 +14,14 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
     Run the evaluation_agent and retrieve the results.
     Store the evaluation result in the tracking table and each dimension's result in the evaluation_result table.
     divide into three part : 1) data collect for evaluation from database 
+                                -> collect latest prompt version from "Prompt" table
+                                -> get dimension list for current project "Project_Dimensions" jion "Dimension" Table.
+                                -> make "dim_dict" dict those mapping dimension name with id, those use for add data into database after evaluation
+                                -> "dim_list" contains all dimensions with description , pass into agent input state
                              2) run the graph and get result
-                             3) store evalution result in database   
+                             3) store evalution result in database
+                                -> given respone by agent is pydantic object , convert into json and then store "Evaluation_Tracking" table
+                                -> store each dimension score in "Dimension_Result" Table  
     """
     try:
         # ============
@@ -84,7 +90,7 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
 
         #  --> dict for store result in db, before store convert into json
         output_response = {
-            "score": overall_score,
+            "score": overall_score / len(result["worker_output"]),
             "overall_assessment_summary": result["response"],
             "dimensions_result": dimensions_result,
         }
