@@ -1,4 +1,4 @@
-from app.db.connection import get_db_connection
+from app.db.connection import get_db_connection,release_db_connection
 
 def create_new_dimension(dimension_name: str, dimension_description: str):
     try:
@@ -30,10 +30,7 @@ def create_new_dimension(dimension_name: str, dimension_description: str):
         raise Exception(f"Failed to create dimension: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 def update_dimension_description(dimension_id: int, dimension_description: str):
     try:
@@ -61,10 +58,7 @@ def update_dimension_description(dimension_id: int, dimension_description: str):
         raise Exception(f"Failed to update dimension description: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 def delete_dimension(dimension_id: int):
     try:
@@ -91,7 +85,4 @@ def delete_dimension(dimension_id: int):
         raise Exception(f"Failed to delete dimension: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)

@@ -1,4 +1,4 @@
-from app.db.connection import get_db_connection
+from app.db.connection import get_db_connection,release_db_connection
 
 def create_evaluation_tracking(
     agent_id: int,
@@ -40,10 +40,7 @@ def create_evaluation_tracking(
         raise Exception(f"Failed to create evaluation tracking: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 
 def get_tracking_by_id(tracking_id: int):
@@ -68,10 +65,7 @@ def get_tracking_by_id(tracking_id: int):
         raise Exception(f"Failed to fetch evaluation tracking: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 
 def get_tracking_by_agent_id(agent_id: int):
@@ -97,10 +91,7 @@ def get_tracking_by_agent_id(agent_id: int):
         raise Exception(f"Failed to fetch agent evaluation history: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 
 def get_latest_tracking(agent_id: int):
@@ -127,10 +118,7 @@ def get_latest_tracking(agent_id: int):
         raise Exception(f"Failed to fetch latest evaluation tracking: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 
 def delete_tracking(tracking_id: int):
@@ -159,7 +147,4 @@ def delete_tracking(tracking_id: int):
         raise Exception(f"Failed to delete evaluation tracking: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)

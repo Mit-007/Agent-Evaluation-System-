@@ -1,4 +1,4 @@
-from app.core.constants import BENCHMARK_SCORE_UPPER_LIMIT , BENCHMARK_SCORE_LOWER_LIMIT ,STATIC_DATA_LIST
+from app.core.constants import BENCHMARK_SCORE_UPPER_LIMIT , BENCHMARK_SCORE_LOWER_LIMIT 
 
 def prompt_orchestrator(prompt,chat):
     return f"""

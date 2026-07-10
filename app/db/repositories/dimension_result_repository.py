@@ -1,4 +1,4 @@
-from app.db.connection import get_db_connection
+from app.db.connection import get_db_connection,release_db_connection
 
 def create_dimension_result(tracking_id: int, dimension_id: int, score: int):
     try:
@@ -34,7 +34,4 @@ def create_dimension_result(tracking_id: int, dimension_id: int, score: int):
         raise Exception(f"Failed to create dimension result: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)

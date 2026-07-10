@@ -1,4 +1,4 @@
-from app.db.connection import get_db_connection
+from app.db.connection import get_db_connection,release_db_connection
 
 def get_latest_prompt(agent_id: int):
     try:
@@ -23,10 +23,7 @@ def get_latest_prompt(agent_id: int):
         raise Exception(f"Failed to fetch latest prompt: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 def get_latest_prompt_version(agent_id: int):
     try:
@@ -56,10 +53,7 @@ def get_latest_prompt_version(agent_id: int):
         raise Exception(f"Failed to fetch latest prompt version: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 
 def get_prompt_count(agent_id: int):
@@ -85,10 +79,7 @@ def get_prompt_count(agent_id: int):
         raise Exception(f"Failed to fetch prompt count: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 
 def create_new_prompt(agent_id: int, prompt: str):
@@ -123,10 +114,7 @@ def create_new_prompt(agent_id: int, prompt: str):
         raise Exception(f"Failed to create prompt: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 def get_prompts_by_agent_id(agent_id: int):
     try:
@@ -151,10 +139,7 @@ def get_prompts_by_agent_id(agent_id: int):
         raise Exception(f"Failed to fetch prompts: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 
 def get_prompt_by_id(prompt_id: int):
@@ -179,10 +164,7 @@ def get_prompt_by_id(prompt_id: int):
         raise Exception(f"Failed to fetch prompt: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 
 def update_prompt_by_id(prompt_id: int, prompt: str):
@@ -212,10 +194,7 @@ def update_prompt_by_id(prompt_id: int, prompt: str):
         raise Exception(f"Failed to update prompt: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 
 def delete_prompt_by_id(prompt_id: int):
@@ -244,7 +223,4 @@ def delete_prompt_by_id(prompt_id: int):
         raise Exception(f"Failed to delete prompt: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)

@@ -1,4 +1,4 @@
-from app.db.connection import get_db_connection
+from app.db.connection import get_db_connection,release_db_connection
 
 def assign_dimension_to_project(project_id: int, dimension_id: int):
     try:
@@ -31,10 +31,7 @@ def assign_dimension_to_project(project_id: int, dimension_id: int):
         raise Exception(f"Failed to assign dimension to project: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
 
 
 def get_dimensions_by_project_id(project_id: int):
@@ -65,7 +62,4 @@ def get_dimensions_by_project_id(project_id: int):
         raise Exception(f"Failed to fetch project dimensions: {e}")
 
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+        release_db_connection(conn, cur)
