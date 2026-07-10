@@ -95,6 +95,8 @@ PORT=5432
 # Gemini API Key
 # ===========
 GOOGLE_API_KEY="your_api_key"
+LLM_MODEL_NAME = "gemini-3.1-flash-lite"
+TEMPERATURE = 0
 ```
 
 ---
