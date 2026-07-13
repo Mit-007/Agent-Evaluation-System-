@@ -136,7 +136,7 @@ def worker(state : WorkerState) -> AgentState:
 
 def aggregator(state : AgentState) -> AgentState:
     """
-    recive all worker output and make full evalution response draft.
+    recive all worker output and make full evalution response summary.
     """
     logger.info("Node:aggregator")
     try :
