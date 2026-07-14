@@ -6,7 +6,7 @@ def create_project(project_name: str):
         conn, cur = get_db_connection()
 
         if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
+            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             "INSERT INTO project (project_name) VALUES (%s) RETURNING *",
@@ -15,6 +15,9 @@ def create_project(project_name: str):
         project = cur.fetchone()
         conn.commit()
         return project
+
+    except ConnectionError as e:
+        raise ConnectionError(e)
 
     except Exception as e:
         if conn:
@@ -30,13 +33,16 @@ def get_project_by_id(project_id: int):
         conn, cur = get_db_connection()
 
         if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
+            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             "SELECT * FROM project WHERE project_id = %s",
             (project_id,)
         )
         return cur.fetchone()
+
+    except ConnectionError as e:
+        raise ConnectionError(e)
 
     except Exception as e:
         raise Exception(f"Failed to fetch project: {e}")
@@ -49,12 +55,15 @@ def list_projects():
         conn, cur = get_db_connection()
 
         if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
+            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             "SELECT * FROM project ORDER BY created_at DESC"
         )
         return cur.fetchall()
+
+    except ConnectionError as e:
+        raise ConnectionError(e)
 
     except Exception as e:
         raise Exception(f"Failed to fetch projects: {e}")
@@ -67,7 +76,7 @@ def update_project_name(project_id: int, project_name: str):
         conn, cur = get_db_connection()
 
         if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
+            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -83,6 +92,9 @@ def update_project_name(project_id: int, project_name: str):
         conn.commit()
         return project
 
+    except ConnectionError as e:
+        raise ConnectionError(e)
+
     except Exception as e:
         if conn:
             conn.rollback()
@@ -97,7 +109,7 @@ def delete_project_by_id(project_id: int):
         conn, cur = get_db_connection()
 
         if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
+            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -111,6 +123,9 @@ def delete_project_by_id(project_id: int):
         project = cur.fetchone()
         conn.commit()
         return project
+
+    except ConnectionError as e:
+        raise ConnectionError(e)
 
     except Exception as e:
         if conn:

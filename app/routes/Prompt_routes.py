@@ -16,6 +16,9 @@ def create_prompt(agent_id: int, payload: PromptCreate):
             "version" : result[3]
         }
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -39,6 +42,9 @@ def view_all_prompt(agent_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -64,6 +70,9 @@ def view_last_updated_prompt(agent_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -89,6 +98,9 @@ def view_prompt(prompt_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -113,6 +125,9 @@ def update_prompt(prompt_id: int, payload: PromptUpdate):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -138,5 +153,8 @@ def delete_agent(prompt_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

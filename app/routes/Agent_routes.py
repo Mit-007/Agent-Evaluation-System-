@@ -15,7 +15,10 @@ def create_agent(project_id: int, payload: AgentCreate):
             "agent_name": result[1],
             "project_id": result[2]
         }
-
+    
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -29,6 +32,9 @@ def view_all_agent(project_id: int):
             "columns": ["Agent_ID", "Agent_Name", "Project_ID"],
             "rows": result
         }
+
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -54,6 +60,9 @@ def view_agent(agent_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -78,6 +87,9 @@ def update_agent(agent_id: int, payload: AgentNameUpdate):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -101,6 +113,9 @@ def delete_agent(agent_id: int):
 
     except HTTPException:
         raise
+
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

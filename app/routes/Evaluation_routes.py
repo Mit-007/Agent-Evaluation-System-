@@ -11,14 +11,34 @@ router = APIRouter(prefix="", tags=["Evaluation Routes"])
 def run_new_evaluation(payload: EvaluationRun):
     try:
         project_id = get_project_id_by_agent_id(payload.agent_id)
+
+        if not project_id:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Project not found."
+            )
+
         result = performe_evalution(project_id,payload.agent_id,payload.chat)
+
         return result
 
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+    except HTTPException:
+        raise
+
+    except ValueError as e:
+        raise HTTPException(status_code=400,detail=str(e))
+
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+
+    except TimeoutError as e:
+        raise HTTPException(status_code=504,detail=str(e))
+
+    except RuntimeError as e:
+        raise HTTPException(status_code=500,detail=str(e))
+
+    except Exception:
+        raise HTTPException(status_code=500,detail="Internal Server Error.")
 
 
 @router.get("/evaluations/{tracking_id}")
@@ -44,11 +64,11 @@ def view_evaluation_result(tracking_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500,detail=str(e))
 
 
 @router.get("/agents/{agent_id}/evaluations")
@@ -67,6 +87,9 @@ def view_agent_evaluation_result(agent_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -96,6 +119,9 @@ def view_agent_latest_evaluation_result(agent_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(
             status_code=500,

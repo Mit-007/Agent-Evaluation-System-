@@ -15,6 +15,9 @@ def create_new_project(payload: ProjectCreate):
             "created_at": result[2]
         }
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -28,6 +31,9 @@ def view_all_project():
             "rows": result
         }
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -51,6 +57,9 @@ def view_project(project_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -74,6 +83,9 @@ def update_project(project_id: int, payload: ProjectNameUpdate):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -98,5 +110,8 @@ def delete_project(project_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -5,7 +5,7 @@ def assign_dimension_to_project(project_id: int, dimension_id: int):
         conn, cur = get_db_connection()
 
         if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
+            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -26,6 +26,9 @@ def assign_dimension_to_project(project_id: int, dimension_id: int):
         conn.commit()
         return result
 
+    except ConnectionError as e:
+        raise ConnectionError(e)
+
     except Exception as e:
         if conn:
             conn.rollback()
@@ -40,7 +43,7 @@ def get_dimensions_by_project_id(project_id: int):
         conn, cur = get_db_connection()
 
         if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
+            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -58,6 +61,9 @@ def get_dimensions_by_project_id(project_id: int):
         )
 
         return cur.fetchall()
+
+    except ConnectionError as e:
+        raise ConnectionError(e)
 
     except Exception as e:
         raise Exception(f"Failed to fetch project dimensions: {e}")

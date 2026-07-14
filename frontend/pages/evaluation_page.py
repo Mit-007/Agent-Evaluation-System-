@@ -62,14 +62,12 @@ if menu == "Run New Evaluation":
         if agent_id and chat_input:
             try:
                 result = run_evaluation(agent_id, chat_input)
-                if "error" in result:
-                    raise Exception(f"Found Error : {result['error']}")
                 st.success("Evaluation started successfully!")
                 for dict in result['benchmark_score']:
                     filled = "█" * dict['score']
                     st.write(f"**{dict['dimension']}**")
                     st.write(f"{filled}  **{dict['score']}/10**")
-                st.success(f"Overall Score :{result['overall_score']}/{(len(result['benchmark_score']))*10}")
+                st.success(f"Overall Score: {result['overall_score']:.2f}")
                 st.header("✅ Response")
                 st.subheader("Overall Assessment")
                 st.markdown(result["response"])

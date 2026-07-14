@@ -30,12 +30,12 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
         prompt_data = get_latest_prompt(agent_id)
 
         if prompt_data is None:
-            raise Exception(f"No prompt found for agent_id={agent_id}")
+            raise ValueError(f"No prompt found for agent_id={agent_id}")
 
         dimensions = get_dimensions_by_project_id(project_id)
 
         if not dimensions:
-            raise Exception(f"No dimensions found for project_id={project_id}")
+            raise ValueError(f"No dimensions found for project_id={project_id}")
 
         #  --> list of dimension with description for graph input 
         dim_list = []
@@ -78,7 +78,7 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
         # part 3 : Manage a graph result and store in database:
         # ============
 
-        # --> indicate the total score 
+        # --> indicate the Average score 
         overall_score = 0
 
         # --> list of all worker output convert into json from pydantic model
@@ -88,9 +88,11 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
             overall_score += worker.benchmarkScore
             dimensions_result.append(worker.model_dump())
 
+        overall_score = overall_score / len(result["worker_output"]) if len(result["worker_output"]) > 0 else 0
+
         #  --> dict for store result in db, before store convert into json
         output_response = {
-            "score": overall_score / len(result["worker_output"]) if len(result["worker_output"]) > 0 else 0,
+            "score": overall_score,
             "overall_assessment_summary": result["response"],
             "dimensions_result": dimensions_result,
         }
@@ -127,8 +129,10 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
             "overall_score": overall_score
         }
 
+    except (ValueError, ConnectionError,TimeoutError):
+        logger.error("Evaluation validation failed.")
+        raise
+
     except Exception as e:
-        logger.exception("Evaluation failed")
-        return {
-            "error" : f"Failed to perform evaluation: {e}"
-        }
+        logger.error("Unexpected error while performing evaluation.")
+        raise RuntimeError("Failed to perform evaluation.") from e

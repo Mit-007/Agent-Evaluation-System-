@@ -25,11 +25,11 @@ def set_dimensions(project_id: int, payload: SetDimensions):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500,detail=str(e))
 
 
 @router.get("/projects/{project_id}/dimensions")
@@ -48,11 +48,11 @@ def view_project_dimensions(project_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500,detail=str(e))
     
 @router.put("/dimensions/{dimension_id}")
 def update_project_dimensions(dimension_id: int,payload : UpdateDimensions):
@@ -74,11 +74,11 @@ def update_project_dimensions(dimension_id: int,payload : UpdateDimensions):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500,detail=str(e))
     
 @router.delete("/dimensions/{dimension_id}")
 def delete_project_dimensions(dimension_id: int):
@@ -100,8 +100,8 @@ def delete_project_dimensions(dimension_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500,detail=str(e))

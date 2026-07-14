@@ -1,11 +1,6 @@
 from psycopg2.pool import ThreadedConnectionPool
-from app.core.config import (
-    DB_HOST,
-    DB_PASSWORD,
-    DB_DATABASE,
-    DB_PORT,
-    DB_USER,
-)
+from app.core.config import (DB_HOST,DB_PASSWORD,DB_DATABASE,DB_PORT,DB_USER,)
+from app.core.logger import logger
 
 connection_pool = None
 
@@ -34,7 +29,7 @@ def get_db_connection():
         return conn, cur
 
     except Exception as e:
-        print(f"Database connection failed: {e}")
+        logger.error(f"Database connection failed: {e}")
         return None, None
         
         
@@ -47,4 +42,4 @@ def release_db_connection(conn, cur=None):
             connection_pool.putconn(conn)
 
     except Exception as e:
-        print(f"Error releasing connection: {e}")
+        logger.error(f"Error releasing connection: {e}")

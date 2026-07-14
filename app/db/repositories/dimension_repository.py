@@ -5,7 +5,7 @@ def create_new_dimension(dimension_name: str, dimension_description: str):
         conn, cur = get_db_connection()
 
         if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
+            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -25,6 +25,9 @@ def create_new_dimension(dimension_name: str, dimension_description: str):
         conn.commit()
         return new_dimension
 
+    except ConnectionError as e:
+        raise ConnectionError(e)
+
     except Exception as e:
         if conn:
             conn.rollback()
@@ -38,7 +41,7 @@ def update_dimension_description(dimension_id: int, dimension_description: str):
         conn, cur = get_db_connection()
 
         if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
+            raise ConnectionError("Unable to connect to the database.")
 
         cur.execute(
             """
@@ -54,6 +57,9 @@ def update_dimension_description(dimension_id: int, dimension_description: str):
         conn.commit()
         return updated_dimension
 
+    except ConnectionError as e:
+        raise ConnectionError(e)
+
     except Exception as e:
         if conn:
             conn.rollback()
@@ -67,7 +73,7 @@ def delete_dimension(dimension_id: int):
         conn, cur = get_db_connection()
 
         if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
+            raise ConnectionError("Unable to connect to the database.")
 
         cur.execute(
             """
@@ -81,6 +87,9 @@ def delete_dimension(dimension_id: int):
         deleted_dimension = cur.fetchone()
         conn.commit()
         return deleted_dimension
+
+    except ConnectionError as e:
+        raise ConnectionError(e)
 
     except Exception as e:
         if conn:
