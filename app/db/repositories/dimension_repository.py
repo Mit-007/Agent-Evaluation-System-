@@ -1,36 +1,6 @@
 from app.db.connection import get_db_connection,release_db_connection
 from psycopg2.extras import execute_values
 
-def create_new_dimension(dimension_name: str, dimension_description: str):
-    try:
-        conn, cur = get_db_connection()
-        
-        cur.execute(
-            """
-            INSERT INTO dimension (
-                dimension_name,
-                dimension_description
-            )
-            VALUES (%s, %s)
-            RETURNING *;
-            """,
-            (
-                dimension_name,
-                dimension_description
-            )
-        )
-        new_dimension = cur.fetchone()
-        conn.commit()
-        return new_dimension
-
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        raise Exception(f"Failed to create dimension: {e}")
-
-    finally:
-        release_db_connection(conn, cur)
-
 def create_dimensions_bulk(dimensions_list):
     conn = None
     cur = None

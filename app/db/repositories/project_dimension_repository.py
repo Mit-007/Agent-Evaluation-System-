@@ -42,38 +42,6 @@ def assign_dimensions_to_project_in_bulk(project_id: int, dimension_ids: list[in
 
     finally:
         release_db_connection(conn, cur)
-    
-def assign_dimension_to_project(project_id: int, dimension_id: int):
-    try:
-        conn, cur = get_db_connection()
-        
-        cur.execute(
-            """
-            INSERT INTO project_dimensions (
-                project_id,
-                dimension_id
-            )
-            VALUES (%s, %s)
-            RETURNING *;
-            """,
-            (
-                project_id,
-                dimension_id
-            )
-        )
-
-        result = cur.fetchone()
-        conn.commit()
-        return result
-
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        raise Exception(f"Failed to assign dimension to project: {e}")
-
-    finally:
-        release_db_connection(conn, cur)
-
 
 def get_dimensions_by_project_id(project_id: int):
     try:
