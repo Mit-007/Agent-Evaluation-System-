@@ -72,7 +72,7 @@ if menu == "Run New Evaluation":
                 st.markdown(result["response"])
                 st.header("✅ Detailed Evaluation Result") 
                 for out in result["dimensions_results"]:
-                    with st.expander(f"📌 {out["dimension"]}", expanded=False):
+                    with st.expander(f"📌 {out['dimension']}", expanded=False):
                         st.metric("Benchmark Score", out["benchmarkScore"])
                         st.markdown("**Reason**")
                         st.write(out["worker_llm_response"]["reason"])
@@ -123,7 +123,7 @@ elif menu == "View Evaluation Result":
                 st.header("✅ Detailed Evaluation Result")
                 st.write("Score : ",result.get("score","")) 
                 for out in result['output_response']["dimensions_result"]:
-                    with st.expander(f"📌 {out["dimension"]}", expanded=False):
+                    with st.expander(f"📌 {out['dimension']}", expanded=False):
                         st.metric("Benchmark Score", out["benchmarkScore"])
                         st.markdown("**Reason**")
                         st.write(out["worker_llm_response"]["reason"])

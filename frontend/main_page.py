@@ -4,19 +4,19 @@ with st.sidebar:
     if st.button == "Home":
         st.write("🏠 Home Page Content")
 
-    elif st.button == "Project":
+    if st.button == "Project":
         st.switch_page("project_page")
 
-    elif st.button == "Dimensions":
+    if st.button == "Dimensions":
         st.switch_page("dimensions_page")
 
-    elif st.button == "Agent":
+    if st.button == "Agent":
         st.switch_page("agent_page")
 
-    elif st.button == "Prompt":
+    if st.button == "Prompt":
         st.switch_page("prompt_page")
 
-    elif st.button == "Evaluation":
+    if st.button == "Evaluation":
         st.switch_page("evaluation_page")
 
 st.set_page_config(

@@ -123,7 +123,4 @@ def view_agent_latest_evaluation_result(agent_id: int):
         raise HTTPException(status_code=503,detail=str(e))
     
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500,detail=str(e))

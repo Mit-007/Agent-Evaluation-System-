@@ -1,7 +1,6 @@
 from psycopg2.pool import ThreadedConnectionPool
-from app.core.config import (DB_HOST,DB_PASSWORD,DB_DATABASE,DB_PORT,DB_USER,)
+from app.core.config import (DB_HOST,DB_PASSWORD,DB_DATABASE,DB_PORT,DB_USER,MAX_CONNECTION_POOLING,MIN_CONNECTION_POOLING)
 from app.core.logger import logger
-from app.core.constants import MAX_CONNECTION_POOLING,MIN_CONNECTION_POOLING
 
 connection_pool = None
 
