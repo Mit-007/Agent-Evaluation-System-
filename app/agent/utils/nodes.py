@@ -1,10 +1,10 @@
 from langgraph.types import Send
 from app.core.logger import logger
-from app.agent.utils.state import *
+from app.agent.utils import state as ST
 from app.services.llm_services import get_llm
-from app.services.prompt_evalAgent import *
+from app.services import prompt_evalAgent as PM
 
-def orchestrator(state: AgentState) -> AgentState:
+def orchestrator(state:ST.AgentState) ->ST.AgentState:
     logger.info("Node: orchestrator")
 
     if not state.prompt:
@@ -22,8 +22,8 @@ def orchestrator(state: AgentState) -> AgentState:
         if llm is None:
             raise ConnectionError("LLM service is unavailable.")
     
-        orchestrator_prompt = prompt_orchestrator(state.prompt, state.chat)
-        structured_llm = llm.with_structured_output(OrchestratorResponse)
+        orchestrator_prompt = PM.prompt_orchestrator(state.prompt, state.chat)
+        structured_llm = llm.with_structured_output(ST.OrchestratorResponse)
         result = structured_llm.invoke(orchestrator_prompt)
         
     except TimeoutError as e:
@@ -44,7 +44,7 @@ def orchestrator(state: AgentState) -> AgentState:
     return {}
 
 
-def route_worker(state: AgentState):
+def route_worker(state: ST.AgentState):
     logger.info("Node: route_worker")
 
     if not state.prompt:
@@ -61,7 +61,7 @@ def route_worker(state: AgentState):
         return [
             Send(
                 "worker",
-                WorkerState(
+                ST.WorkerState(
                     prompt=state.prompt,
                     chat=state.chat,
                     dimension=dimension,
@@ -75,7 +75,7 @@ def route_worker(state: AgentState):
         raise RuntimeError("Failed to route workers.") from e
 
 
-def worker(state : WorkerState) -> AgentState:
+def worker(state : ST.WorkerState) -> ST.AgentState:
     """
     perform a evaluation every single dimension base and return evalution result list.
     """
@@ -89,8 +89,8 @@ def worker(state : WorkerState) -> AgentState:
         if not llm:
             raise ConnectionError("LLM service is not available.")
         
-        worker_prompt = prompt_worker(state.prompt,state.chat,state.dimension['dimension_name'],state.dimension["dimension_description"])
-        structured_llm = llm.with_structured_output(WorkerResponse)
+        worker_prompt = PM.prompt_worker(state.prompt,state.chat,state.dimension['dimension_name'],state.dimension["dimension_description"])
+        structured_llm = llm.with_structured_output(ST.WorkerResponse)
         result = structured_llm.invoke(worker_prompt)
 
         # -> if llm change a in dimenssion name then , replce with original 
@@ -102,13 +102,13 @@ def worker(state : WorkerState) -> AgentState:
 
     except Exception as e:
         logger.error(f"Error in worker_DB_researcher: {e}")
-        worker_result = WorkerLlmResponseDict(
+        worker_result = ST.WorkerLlmResponseDict(
             reason=f"Worker execution failed: {str(e)}",
             chat_issue=[],
             prompt_issue=[],
             recommended_prompt_improvements=""
         )
-        result = WorkerResponse (
+        result = ST.WorkerResponse (
             dimension = state.dimension['dimension_name'],
             worker_llm_response = worker_result,
             benchmarkScore = 0 
@@ -117,7 +117,7 @@ def worker(state : WorkerState) -> AgentState:
             "worker_output" : [result]
         }
 
-def aggregator(state: AgentState) -> AgentState:
+def aggregator(state: ST.AgentState) -> ST.AgentState:
     """
     Receive all worker outputs and generate the final evaluation summary.
     """
@@ -138,8 +138,8 @@ def aggregator(state: AgentState) -> AgentState:
         if llm is None:
             raise ConnectionError("LLM service is unavailable.")
 
-        aggregator_prompt = prompt_aggregator(state.worker_output)
-        structured_llm = llm.with_structured_output(AggregatorResponse)
+        aggregator_prompt = PM.prompt_aggregator(state.worker_output)
+        structured_llm = llm.with_structured_output(ST.AggregatorResponse)
         result = structured_llm.invoke(aggregator_prompt)
 
         return {

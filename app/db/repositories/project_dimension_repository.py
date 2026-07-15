@@ -1,11 +1,51 @@
 from app.db.connection import get_db_connection,release_db_connection
+from psycopg2.extras import execute_values
 
-def assign_dimension_to_project(project_id: int, dimension_id: int):
+def assign_dimensions_to_project_in_bulk(project_id: int, dimension_ids: list[int]):
+    conn = None
+    cur = None
+
     try:
         conn, cur = get_db_connection()
 
-        if conn is None or cur is None:
-            raise ConnectionError("Unable to connect to the database.")
+        query = """
+            INSERT INTO project_dimensions (
+                project_id,
+                dimension_id
+            )
+            VALUES %s
+            RETURNING *;
+        """
+
+        values = [
+            (project_id, dimension_id)
+            for dimension_id in dimension_ids
+        ]
+
+        execute_values(
+            cur,
+            query,
+            values
+        )
+
+        result = cur.fetchall()
+
+        conn.commit()
+
+        return result
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+
+        raise Exception(f"Failed to assign dimensions to project: {e}")
+
+    finally:
+        release_db_connection(conn, cur)
+    
+def assign_dimension_to_project(project_id: int, dimension_id: int):
+    try:
+        conn, cur = get_db_connection()
         
         cur.execute(
             """
@@ -26,9 +66,6 @@ def assign_dimension_to_project(project_id: int, dimension_id: int):
         conn.commit()
         return result
 
-    except ConnectionError as e:
-        raise ConnectionError(e)
-
     except Exception as e:
         if conn:
             conn.rollback()
@@ -41,9 +78,6 @@ def assign_dimension_to_project(project_id: int, dimension_id: int):
 def get_dimensions_by_project_id(project_id: int):
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -61,9 +95,6 @@ def get_dimensions_by_project_id(project_id: int):
         )
 
         return cur.fetchall()
-
-    except ConnectionError as e:
-        raise ConnectionError(e)
 
     except Exception as e:
         raise Exception(f"Failed to fetch project dimensions: {e}")

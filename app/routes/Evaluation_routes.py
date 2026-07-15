@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.models.evaluation_model import EvaluationRun
 from app.services.evaluation_services import performe_evalution
-from app.db.repositories.evaluation_tracking_repository import *
+from app.db.repositories import evaluation_tracking_repository as ETR
 from app.db.repositories.agent_repository import get_project_id_by_agent_id
 
 router = APIRouter(prefix="", tags=["Evaluation Routes"])
@@ -44,7 +44,7 @@ def run_new_evaluation(payload: EvaluationRun):
 @router.get("/evaluations/{tracking_id}")
 def view_evaluation_result(tracking_id: int):
     try:
-        result = get_tracking_by_id(tracking_id)
+        result = ETR.get_tracking_by_id(tracking_id)
 
         if not result:
             raise HTTPException(
@@ -74,7 +74,7 @@ def view_evaluation_result(tracking_id: int):
 @router.get("/agents/{agent_id}/evaluations")
 def view_agent_evaluation_result(agent_id: int):
     try:
-        result = get_tracking_by_agent_id(agent_id)
+        result = ETR.get_tracking_by_agent_id(agent_id)
 
         if not result:
             raise HTTPException(
@@ -99,7 +99,7 @@ def view_agent_evaluation_result(agent_id: int):
 @router.get("/agents/{agent_id}/evaluations/latest")
 def view_agent_latest_evaluation_result(agent_id: int):
     try:
-        result = get_latest_tracking(agent_id)
+        result = ETR.get_latest_tracking(agent_id)
 
         if not result:
             raise HTTPException(

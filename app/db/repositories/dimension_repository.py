@@ -1,11 +1,9 @@
 from app.db.connection import get_db_connection,release_db_connection
+from psycopg2.extras import execute_values
 
 def create_new_dimension(dimension_name: str, dimension_description: str):
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -25,9 +23,6 @@ def create_new_dimension(dimension_name: str, dimension_description: str):
         conn.commit()
         return new_dimension
 
-    except ConnectionError as e:
-        raise ConnectionError(e)
-
     except Exception as e:
         if conn:
             conn.rollback()
@@ -36,12 +31,50 @@ def create_new_dimension(dimension_name: str, dimension_description: str):
     finally:
         release_db_connection(conn, cur)
 
-def update_dimension_description(dimension_id: int, dimension_description: str):
+def create_dimensions_bulk(dimensions_list):
+    conn = None
+    cur = None
+
     try:
         conn, cur = get_db_connection()
 
-        if conn is None or cur is None:
-            raise ConnectionError("Unable to connect to the database.")
+        query = """
+            INSERT INTO dimension (
+                dimension_name,
+                dimension_description
+            )
+            VALUES %s
+            RETURNING *;
+        """
+
+        values = [
+            (
+                dim["dimension_name"],
+                dim["dimension_description"]
+            )
+            for dim in dimensions_list
+        ]
+
+        execute_values(cur, query, values)
+
+        inserted_dimensions = cur.fetchall()
+
+        conn.commit()
+
+        return inserted_dimensions
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        raise Exception(f"Failed to create dimensions: {e}")
+
+    finally:
+        if conn:
+            release_db_connection(conn, cur)
+
+def update_dimension_description(dimension_id: int, dimension_description: str):
+    try:
+        conn, cur = get_db_connection()
 
         cur.execute(
             """
@@ -57,9 +90,6 @@ def update_dimension_description(dimension_id: int, dimension_description: str):
         conn.commit()
         return updated_dimension
 
-    except ConnectionError as e:
-        raise ConnectionError(e)
-
     except Exception as e:
         if conn:
             conn.rollback()
@@ -71,9 +101,6 @@ def update_dimension_description(dimension_id: int, dimension_description: str):
 def delete_dimension(dimension_id: int):
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise ConnectionError("Unable to connect to the database.")
 
         cur.execute(
             """
@@ -87,10 +114,7 @@ def delete_dimension(dimension_id: int):
         deleted_dimension = cur.fetchone()
         conn.commit()
         return deleted_dimension
-
-    except ConnectionError as e:
-        raise ConnectionError(e)
-
+    
     except Exception as e:
         if conn:
             conn.rollback()

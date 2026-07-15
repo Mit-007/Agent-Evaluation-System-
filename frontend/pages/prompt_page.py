@@ -61,6 +61,8 @@ menu = st.sidebar.selectbox(
         "View All Prompts for Agent",
         "View Latest Prompt",
         "View Prompt Details",
+        "Update Prompt",
+        "Delete Prompt",
     ],
 )
 

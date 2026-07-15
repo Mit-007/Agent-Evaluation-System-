@@ -3,9 +3,6 @@ from app.db.connection import get_db_connection,release_db_connection
 def create_dimension_result(tracking_id: int, dimension_id: int, score: int):
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise ConnectionError("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -28,9 +25,6 @@ def create_dimension_result(tracking_id: int, dimension_id: int, score: int):
         conn.commit()
 
         return new_dimension_result
-
-    except ConnectionError as e:
-        raise ConnectionError(e)
 
     except Exception as e:
         if conn:
