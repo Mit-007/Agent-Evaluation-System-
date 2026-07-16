@@ -1,24 +1,5 @@
 import streamlit as st
 
-with st.sidebar:
-    if st.button == "Home":
-        st.write("🏠 Home Page Content")
-
-    if st.button == "Project":
-        st.switch_page("project_page")
-
-    if st.button == "Dimensions":
-        st.switch_page("dimensions_page")
-
-    if st.button == "Agent":
-        st.switch_page("agent_page")
-
-    if st.button == "Prompt":
-        st.switch_page("prompt_page")
-
-    if st.button == "Evaluation":
-        st.switch_page("evaluation_page")
-
 st.set_page_config(
     page_title="Agent Evaluation System",
     page_icon="🤖",

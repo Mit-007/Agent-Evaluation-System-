@@ -121,7 +121,7 @@ elif menu == "View Evaluation Result":
                 st.write("Prompt_ID : ",result.get("prompt_id",""))
                 st.write("Chat : ",result.get("chat",""))
                 st.header("✅ Detailed Evaluation Result")
-                st.write("Score : ",result.get("score","")) 
+                st.write("Score : ",result['output_response']["score"]) 
                 for out in result['output_response']["dimensions_result"]:
                     with st.expander(f"📌 {out['dimension']}", expanded=False):
                         st.metric("Benchmark Score", out["benchmarkScore"])
@@ -206,7 +206,7 @@ elif menu == "View latest Evaluation of Agent":
                 st.write("Prompt_ID : ",result.get("prompt_id",""))
                 st.write("Chat : ",result.get("chat",""))
                 st.header("✅ Detailed Evaluation Result")
-                st.write("Score : ",result.get("score","")) 
+                st.write("Score : ",result['output_response']["score"]) 
                 for out in result['output_response']["dimensions_result"]:
                     with st.expander(f"📌 {out["dimension"]}", expanded=False):
                         st.metric("Benchmark Score", out["benchmarkScore"])

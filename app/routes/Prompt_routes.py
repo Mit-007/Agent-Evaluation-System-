@@ -133,7 +133,7 @@ def update_prompt(prompt_id: int, payload: PM.PromptUpdate):
 
 
 @router.delete("/prompts/{prompt_id}")
-def delete_agent(prompt_id: int):
+def delete_prompt(prompt_id: int):
     try:
         result = PR.delete_prompt_by_id(prompt_id)
 

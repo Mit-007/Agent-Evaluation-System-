@@ -1,7 +1,7 @@
 from app.db.repositories.prompt_repository import get_latest_prompt
 from app.db.repositories.project_dimension_repository import get_dimensions_by_project_id
 from app.db.repositories.evaluation_tracking_repository import create_evaluation_tracking
-from app.db.repositories.dimension_result_repository import create_dimension_result
+from app.db.repositories.dimension_result_repository import create_dimension_results_bulk
 from app.agent.agent import EvalAgent
 from app.core.logger import logger
 import json
@@ -103,17 +103,17 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
 
         #  --> list of benchmark score of dimensions
         benchmark_scores = []
+        dimension_results = []
 
         for output in result["worker_output"]:
             if output.dimension == '' or output.dimension not in dim_dict:
                 continue 
 
-            #  --> store single dimension result in DB(Table : dimension_results) 
-            create_dimension_result(
-                tracking_data[0], # Tracking_id
-                dim_dict[output.dimension],
-                output.benchmarkScore
-            )
+            dimension_results.append({
+                "tracking_id": tracking_data[0],
+                "dimension_id": dim_dict[output.dimension],
+                "score": output.benchmarkScore,
+            })
 
             benchmark_scores.append(
                 {
@@ -121,6 +121,10 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
                     "score": output.benchmarkScore
                 }
             )
+        
+        #  --> store single dimension result in DB(Table : dimension_results) 
+        if dimension_results:
+            create_dimension_results_bulk(dimension_results)
 
         return {
             "benchmark_score": benchmark_scores,

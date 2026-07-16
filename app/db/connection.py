@@ -63,7 +63,7 @@ def get_db_connection():
 
     except Exception as e:
         logger.error(f"Database connection failed: {e}")
-        raise Exception(f"error in db connection , {e}")
+        raise ConnectionError(f"error in db connection , {e}")
         
         
 def release_db_connection(conn, cur=None):
