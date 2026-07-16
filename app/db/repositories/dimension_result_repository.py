@@ -1,6 +1,7 @@
 from app.db.connection import get_db_connection,release_db_connection
 
 def create_dimension_result(tracking_id: int, dimension_id: int, score: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
         
@@ -26,6 +27,9 @@ def create_dimension_result(tracking_id: int, dimension_id: int, score: int):
 
         return new_dimension_result
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()

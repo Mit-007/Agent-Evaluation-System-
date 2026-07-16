@@ -2,9 +2,7 @@ from app.db.connection import get_db_connection,release_db_connection
 from psycopg2.extras import execute_values
 
 def assign_dimensions_to_project_in_bulk(project_id: int, dimension_ids: list[int]):
-    conn = None
-    cur = None
-
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
 
@@ -34,6 +32,9 @@ def assign_dimensions_to_project_in_bulk(project_id: int, dimension_ids: list[in
 
         return result
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()
@@ -44,6 +45,7 @@ def assign_dimensions_to_project_in_bulk(project_id: int, dimension_ids: list[in
         release_db_connection(conn, cur)
 
 def get_dimensions_by_project_id(project_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
         
@@ -64,6 +66,9 @@ def get_dimensions_by_project_id(project_id: int):
 
         return cur.fetchall()
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch project dimensions: {e}")
 

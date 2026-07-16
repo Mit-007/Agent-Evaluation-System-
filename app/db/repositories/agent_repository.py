@@ -1,6 +1,7 @@
 from app.db.connection import get_db_connection,release_db_connection
 
 def create_new_agent(agent_name: str, project_id: int):
+    conn = cur =None
     try:
         conn, cur = get_db_connection()
         
@@ -17,6 +18,9 @@ def create_new_agent(agent_name: str, project_id: int):
         conn.commit()
         return created_agent
 
+    except ConnectionError:
+        raise
+
     except Exception as e:
         if conn:
             conn.rollback()
@@ -27,6 +31,7 @@ def create_new_agent(agent_name: str, project_id: int):
 
 
 def get_agent_by_id(agent_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
 
@@ -40,6 +45,9 @@ def get_agent_by_id(agent_id: int):
 
         return cur.fetchone()
 
+    except ConnectionError:
+        raise
+
     except Exception as e:
         raise Exception(f"Failed to fetch agent: {e}")
 
@@ -48,6 +56,7 @@ def get_agent_by_id(agent_id: int):
 
 
 def get_agents_by_project_id(project_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
         
@@ -64,13 +73,17 @@ def get_agents_by_project_id(project_id: int):
         return cur.fetchall()
 
     except ConnectionError as e:
-        raise ConnectionError(e)
+        raise 
 
+    except Exception as e:
+        raise Exception(f"Failed to fetch Agent list for given project {e}")
+    
     finally:
         release_db_connection(conn, cur)
 
 
 def update_agent_name(agent_id: int, agent_name: str):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
         
@@ -88,6 +101,9 @@ def update_agent_name(agent_id: int, agent_name: str):
         conn.commit()
         return updated_agent
 
+    except ConnectionError:
+        raise
+
     except Exception as e:
         if conn:
             conn.rollback()
@@ -98,6 +114,7 @@ def update_agent_name(agent_id: int, agent_name: str):
 
 
 def delete_agent_by_id(agent_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
         
@@ -113,7 +130,10 @@ def delete_agent_by_id(agent_id: int):
         deleted_agent = cur.fetchone()
         conn.commit()
         return deleted_agent
-    
+
+    except ConnectionError:
+        raise
+
     except Exception as e:
         if conn:
             conn.rollback()
@@ -124,6 +144,7 @@ def delete_agent_by_id(agent_id: int):
 
 
 def get_project_id_by_agent_id(agent_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
 
@@ -142,6 +163,9 @@ def get_project_id_by_agent_id(agent_id: int):
             raise Exception(f"No agent found with agent_id: {agent_id}")
 
         return result[0]
+
+    except ConnectionError:
+        raise
 
     except Exception as e:
         raise Exception(f"Failed to fetch project_id for agent_id {agent_id}: {e}")

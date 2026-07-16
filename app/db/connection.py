@@ -59,7 +59,7 @@ def get_db_connection():
         return conn, cur
     
     except ConnectionError as e:
-        raise ConnectionError(e)
+        raise 
 
     except Exception as e:
         logger.error(f"Database connection failed: {e}")

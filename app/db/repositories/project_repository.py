@@ -2,6 +2,7 @@ from app.db.connection import get_db_connection ,release_db_connection
 
 
 def create_project(project_name: str):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
         
@@ -13,6 +14,9 @@ def create_project(project_name: str):
         conn.commit()
         return project
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()
@@ -23,6 +27,7 @@ def create_project(project_name: str):
 
 
 def get_project_by_id(project_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
         
@@ -32,6 +37,9 @@ def get_project_by_id(project_id: int):
         )
         return cur.fetchone()
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch project: {e}")
 
@@ -39,6 +47,7 @@ def get_project_by_id(project_id: int):
         release_db_connection(conn, cur)
 
 def list_projects():
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
         
@@ -47,6 +56,9 @@ def list_projects():
         )
         return cur.fetchall()
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch projects: {e}")
 
@@ -54,6 +66,7 @@ def list_projects():
         release_db_connection(conn, cur)
 
 def update_project_name(project_id: int, project_name: str):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
         
@@ -71,6 +84,9 @@ def update_project_name(project_id: int, project_name: str):
         conn.commit()
         return project
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()
@@ -81,6 +97,7 @@ def update_project_name(project_id: int, project_name: str):
 
 
 def delete_project_by_id(project_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
         
@@ -97,6 +114,9 @@ def delete_project_by_id(project_id: int):
         conn.commit()
         return project
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()

@@ -18,19 +18,18 @@ def orchestrator(state:ST.AgentState) ->ST.AgentState:
 
     try:
         llm = get_llm()
-    
-        if llm is None:
-            raise ConnectionError("LLM service is unavailable.")
-    
+
         orchestrator_prompt = PM.prompt_orchestrator(state.prompt, state.chat)
+
         structured_llm = llm.with_structured_output(ST.OrchestratorResponse)
+
         result = structured_llm.invoke(orchestrator_prompt)
         
     except TimeoutError as e:
-        raise TimeoutError("LLM request timed out.") from e
+        raise TimeoutError("orchestrator LLM request timed out.") from e
     
-    except ConnectionError as e:
-        raise ConnectionError(e) from e
+    except (ConnectionError, ValueError):
+        raise
     
     except Exception as e:
         raise RuntimeError("Failed to invoke LLM.") from e
@@ -86,9 +85,6 @@ def worker(state : ST.WorkerState) -> ST.AgentState:
 
         llm = get_llm()
         
-        if not llm:
-            raise ConnectionError("LLM service is not available.")
-        
         worker_prompt = PM.prompt_worker(state.prompt,state.chat,state.dimension['dimension_name'],state.dimension["dimension_description"])
         structured_llm = llm.with_structured_output(ST.WorkerResponse)
         result = structured_llm.invoke(worker_prompt)
@@ -101,7 +97,7 @@ def worker(state : ST.WorkerState) -> ST.AgentState:
         }
 
     except Exception as e:
-        logger.error(f"Error in worker_DB_researcher: {e}")
+        logger.error(f"Error in Worker: {e}")
         worker_result = ST.WorkerLlmResponseDict(
             reason=f"Worker execution failed: {str(e)}",
             chat_issue=[],
@@ -135,9 +131,6 @@ def aggregator(state: ST.AgentState) -> ST.AgentState:
     try:
         llm = get_llm()
 
-        if llm is None:
-            raise ConnectionError("LLM service is unavailable.")
-
         aggregator_prompt = PM.prompt_aggregator(state.worker_output)
         structured_llm = llm.with_structured_output(ST.AggregatorResponse)
         result = structured_llm.invoke(aggregator_prompt)
@@ -149,8 +142,8 @@ def aggregator(state: ST.AgentState) -> ST.AgentState:
     except TimeoutError as e:
         raise TimeoutError("Aggregator request timed out.") from e
 
-    except ConnectionError as e:
-        raise ConnectionError(e) from e
+    except (ConnectionError, ValueError):
+        raise
 
     except Exception as e:
         logger.exception("Aggregator node failed.")

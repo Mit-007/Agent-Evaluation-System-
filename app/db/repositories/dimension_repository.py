@@ -2,9 +2,7 @@ from app.db.connection import get_db_connection,release_db_connection
 from psycopg2.extras import execute_values
 
 def create_dimensions_bulk(dimensions_list):
-    conn = None
-    cur = None
-
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
 
@@ -33,6 +31,9 @@ def create_dimensions_bulk(dimensions_list):
 
         return inserted_dimensions
 
+    except ConnectionError:
+        raise
+
     except Exception as e:
         if conn:
             conn.rollback()
@@ -43,6 +44,7 @@ def create_dimensions_bulk(dimensions_list):
             release_db_connection(conn, cur)
 
 def update_dimension_description(dimension_id: int, dimension_description: str):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
 
@@ -60,6 +62,9 @@ def update_dimension_description(dimension_id: int, dimension_description: str):
         conn.commit()
         return updated_dimension
 
+    except ConnectionError:
+        raise
+
     except Exception as e:
         if conn:
             conn.rollback()
@@ -69,6 +74,7 @@ def update_dimension_description(dimension_id: int, dimension_description: str):
         release_db_connection(conn, cur)
 
 def delete_dimension(dimension_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
 
@@ -84,6 +90,9 @@ def delete_dimension(dimension_id: int):
         deleted_dimension = cur.fetchone()
         conn.commit()
         return deleted_dimension
+
+    except ConnectionError:
+        raise
     
     except Exception as e:
         if conn:

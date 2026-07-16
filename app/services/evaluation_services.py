@@ -129,10 +129,10 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
             "overall_score": overall_score
         }
 
-    except (ValueError, ConnectionError,TimeoutError):
+    except (ValueError, ConnectionError,TimeoutError,RuntimeError):
         logger.error("Evaluation validation failed.")
         raise
 
     except Exception as e:
         logger.error("Unexpected error while performing evaluation.")
-        raise RuntimeError("Failed to perform evaluation.") from e
+        raise RuntimeError("Failed to perform evaluation. {e}") from e
