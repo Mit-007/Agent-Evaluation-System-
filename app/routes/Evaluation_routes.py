@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.models.evaluation_model import EvaluationRun
 from app.services.evaluation_services import performe_evalution
-from app.db.repositories.evaluation_tracking_repository import *
+from app.db.repositories import evaluation_tracking_repository as ETR
 from app.db.repositories.agent_repository import get_project_id_by_agent_id
 
 router = APIRouter(prefix="", tags=["Evaluation Routes"])
@@ -11,20 +11,40 @@ router = APIRouter(prefix="", tags=["Evaluation Routes"])
 def run_new_evaluation(payload: EvaluationRun):
     try:
         project_id = get_project_id_by_agent_id(payload.agent_id)
+
+        if not project_id:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Project not found."
+            )
+
         result = performe_evalution(project_id,payload.agent_id,payload.chat)
+
         return result
 
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+    except HTTPException:
+        raise
+
+    except ValueError as e:
+        raise HTTPException(status_code=400,detail=str(e))
+
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+
+    except TimeoutError as e:
+        raise HTTPException(status_code=504,detail=str(e))
+
+    except RuntimeError as e:
+        raise HTTPException(status_code=500,detail=str(e))
+
+    except Exception:
+        raise HTTPException(status_code=500,detail="Internal Server Error.")
 
 
 @router.get("/evaluations/{tracking_id}")
 def view_evaluation_result(tracking_id: int):
     try:
-        result = get_tracking_by_id(tracking_id)
+        result = ETR.get_tracking_by_id(tracking_id)
 
         if not result:
             raise HTTPException(
@@ -44,17 +64,17 @@ def view_evaluation_result(tracking_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500,detail=str(e))
 
 
 @router.get("/agents/{agent_id}/evaluations")
 def view_agent_evaluation_result(agent_id: int):
     try:
-        result = get_tracking_by_agent_id(agent_id)
+        result = ETR.get_tracking_by_agent_id(agent_id)
 
         if not result:
             raise HTTPException(
@@ -67,6 +87,9 @@ def view_agent_evaluation_result(agent_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -76,7 +99,7 @@ def view_agent_evaluation_result(agent_id: int):
 @router.get("/agents/{agent_id}/evaluations/latest")
 def view_agent_latest_evaluation_result(agent_id: int):
     try:
-        result = get_latest_tracking(agent_id)
+        result = ETR.get_latest_tracking(agent_id)
 
         if not result:
             raise HTTPException(
@@ -96,8 +119,8 @@ def view_agent_latest_evaluation_result(agent_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=500,detail=str(e))

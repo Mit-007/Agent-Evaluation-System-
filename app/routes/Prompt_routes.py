@@ -1,14 +1,14 @@
 from fastapi import APIRouter, HTTPException
-from app.db.repositories.prompt_repository import *
-from app.models.prompt_routes_model import *
+from app.db.repositories import prompt_repository as PR
+from app.models import prompt_routes_model as PM
 
 router = APIRouter(prefix="", tags=["Prompt Routes"])
 
 
 @router.post("/agents/{agent_id}/prompts")
-def create_prompt(agent_id: int, payload: PromptCreate):
+def create_prompt(agent_id: int, payload: PM.PromptCreate):
     try:
-        result = create_new_prompt(agent_id, payload.prompt)
+        result = PR.create_new_prompt(agent_id, payload.prompt)
         return {
             "prompt_id" : result[0],
             "agent_id" : result[1],
@@ -16,6 +16,9 @@ def create_prompt(agent_id: int, payload: PromptCreate):
             "version" : result[3]
         }
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -23,7 +26,7 @@ def create_prompt(agent_id: int, payload: PromptCreate):
 @router.get("/agents/{agent_id}/prompts")
 def view_all_prompt(agent_id: int):
     try:
-        result = get_prompts_by_agent_id(agent_id)
+        result = PR.get_prompts_by_agent_id(agent_id)
 
         if result is None:
             raise HTTPException(
@@ -39,6 +42,9 @@ def view_all_prompt(agent_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -46,7 +52,7 @@ def view_all_prompt(agent_id: int):
 @router.get("/agents/{agent_id}/prompts/latest")
 def view_last_updated_prompt(agent_id: int):
     try:
-        result = get_latest_prompt(agent_id)
+        result = PR.get_latest_prompt(agent_id)
 
         if result is None:
             raise HTTPException(
@@ -64,6 +70,9 @@ def view_last_updated_prompt(agent_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -71,7 +80,7 @@ def view_last_updated_prompt(agent_id: int):
 @router.get("/prompts/{prompt_id}")
 def view_prompt(prompt_id: int):
     try:
-        result = get_prompt_by_id(prompt_id)
+        result = PR.get_prompt_by_id(prompt_id)
 
         if result is None:
             raise HTTPException(
@@ -89,13 +98,16 @@ def view_prompt(prompt_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.put("/prompts/{prompt_id}")
-def update_prompt(prompt_id: int, payload: PromptUpdate):
+def update_prompt(prompt_id: int, payload: PM.PromptUpdate):
     try:
-        result = update_prompt_by_id(prompt_id, payload.new_prompt)
+        result = PR.update_prompt_by_id(prompt_id, payload.new_prompt)
 
         if result is None:
             raise HTTPException(
@@ -113,14 +125,17 @@ def update_prompt(prompt_id: int, payload: PromptUpdate):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/prompts/{prompt_id}")
-def delete_agent(prompt_id: int):
+def delete_prompt(prompt_id: int):
     try:
-        result = delete_prompt_by_id(prompt_id)
+        result = PR.delete_prompt_by_id(prompt_id)
 
         if result is None:
             raise HTTPException(
@@ -138,5 +153,8 @@ def delete_agent(prompt_id: int):
     except HTTPException:
         raise
 
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

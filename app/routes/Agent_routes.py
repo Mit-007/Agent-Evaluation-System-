@@ -1,21 +1,24 @@
 from fastapi import APIRouter, HTTPException
-from app.db.repositories.agent_repository import *
-from app.models.agent_routes_model import *
+from app.db.repositories import agent_repository as AR
+from app.models import agent_routes_model as AM
 
 router = APIRouter(prefix="", tags=["Agent Routes"])
 
 
 @router.post("/projects/{project_id}/agents")
-def create_agent(project_id: int, payload: AgentCreate):
+def create_agent(project_id: int, payload: AM.AgentCreate):
     try:
-        result = create_new_agent(payload.agent_name, project_id)
+        result = AR.create_new_agent(payload.agent_name, project_id)
 
         return {
             "agent_id": result[0],
             "agent_name": result[1],
             "project_id": result[2]
         }
-
+    
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -23,12 +26,15 @@ def create_agent(project_id: int, payload: AgentCreate):
 @router.get("/projects/{project_id}/agents")
 def view_all_agent(project_id: int):
     try:
-        result = get_agents_by_project_id(project_id)
+        result = AR.get_agents_by_project_id(project_id)
 
         return {
             "columns": ["Agent_ID", "Agent_Name", "Project_ID"],
             "rows": result
         }
+
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -37,7 +43,7 @@ def view_all_agent(project_id: int):
 @router.get("/agents/{agent_id}")
 def view_agent(agent_id: int):
     try:
-        result = get_agent_by_id(agent_id)
+        result = AR.get_agent_by_id(agent_id)
 
         if result is None:
             raise HTTPException(
@@ -53,15 +59,18 @@ def view_agent(agent_id: int):
 
     except HTTPException:
         raise
+
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.put("/agents/{agent_id}")
-def update_agent(agent_id: int, payload: AgentNameUpdate):
+def update_agent(agent_id: int, payload: AM.AgentNameUpdate):
     try:
-        result = update_agent_name(agent_id, payload.agent_new_name)
+        result = AR.update_agent_name(agent_id, payload.agent_new_name)
 
         if result is None:
             raise HTTPException(
@@ -77,6 +86,9 @@ def update_agent(agent_id: int, payload: AgentNameUpdate):
 
     except HTTPException:
         raise
+
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -85,7 +97,7 @@ def update_agent(agent_id: int, payload: AgentNameUpdate):
 @router.delete("/agents/{agent_id}")
 def delete_agent(agent_id: int):
     try:
-        result = delete_agent_by_id(agent_id)
+        result = AR.delete_agent_by_id(agent_id)
 
         if result is None:
             raise HTTPException(
@@ -101,6 +113,9 @@ def delete_agent(agent_id: int):
 
     except HTTPException:
         raise
+
+    except ConnectionError as e:
+        raise HTTPException(status_code=503,detail=str(e))
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

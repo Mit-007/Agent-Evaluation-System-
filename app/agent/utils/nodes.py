@@ -1,98 +1,80 @@
 from langgraph.types import Send
 from app.core.logger import logger
-from app.agent.utils.state import *
+from app.agent.utils import state as ST
 from app.services.llm_services import get_llm
-from app.services.prompt_evalAgent import *
+from app.services import prompt_evalAgent as PM
 
-def orchestrator(state : AgentState) -> AgentState:
-    """ 
-    Input Validation using llm: 
-    -> check given prompt -if not valid then give "False"
-    -> check given chat -if not valid then give "False"
-    """
-    logger.info("Node:orchestrator")
-    try :
-        if not state.prompt :
-            raise ValueError("Recieve a Empty prompt")
+def orchestrator(state:ST.AgentState) ->ST.AgentState:
+    logger.info("Node: orchestrator")
 
-        if not state.chat : 
-            raise ValueError("Recieve a Empty chat")
-        
-        if len(state.dimensions) == 0 :
-            raise ValueError("Provide Empty Dimensions List")
+    if not state.prompt:
+        raise ValueError("Received an empty prompt.")
 
+    if not state.chat:
+        raise ValueError("Received an empty chat.")
+
+    if not state.dimensions:
+        raise ValueError("Received an empty dimensions list.")
+
+    try:
         llm = get_llm()
 
-        if not llm:
-            raise ValueError("LLM service is not available.")
+        orchestrator_prompt = PM.prompt_orchestrator(state.prompt, state.chat)
 
-        orchestrator_prompt = prompt_orchestrator(state.prompt,state.chat)
-        structured_llm = llm.with_structured_output(OrchestratorResponse)
+        structured_llm = llm.with_structured_output(ST.OrchestratorResponse)
+
         result = structured_llm.invoke(orchestrator_prompt)
-
-        if not result.is_prompt_valid:
-            raise ValueError("Provided Prompt are not Valid Prompt")
         
-        if not result.is_chat_valid:
-            raise ValueError("Provided chat are not Valid chat")
-
-        return {}
-
+    except TimeoutError as e:
+        raise TimeoutError("orchestrator LLM request timed out.") from e
+    
+    except (ConnectionError, ValueError):
+        raise
+    
     except Exception as e:
-        logger.error(f"error found in orchestrator node : {e}")
-        return {
-            'prompt' : "",
-            'chat' : "",
-            'dimensions' : [],
-            'response' : f"Error Found , {e}"
-        }
+        raise RuntimeError("Failed to invoke LLM.") from e
+
+    if not result.is_prompt_valid:
+        raise ValueError("Invalid prompt.")
+
+    if not result.is_chat_valid:
+        raise ValueError("Invalid chat.")
+
+    return {}
 
 
-def route_worker(state : AgentState):
-    """
-    Route to a worker node using the send() API.
-    route to worker for every single dimension.
-    """
-    logger.info("Node:-route_workers")
+def route_worker(state: ST.AgentState):
+    logger.info("Node: route_worker")
+
+    if not state.prompt:
+        raise ValueError("Prompt cannot be empty.")
+
+    if not state.chat:
+        raise ValueError("Chat cannot be empty.")
+
+    if not state.dimensions:
+        logger.warning("No valid dimensions provided.")
+        return []
+
     try:
-        if not state.prompt or not state.chat :
-            raise ValueError("Recieve a Invalid Inputs")
-
-        dimensions = state.dimensions
-
-        if not dimensions or len(dimensions)==0:
-            logger.warning("Not a Provide any Valid Dimensions")
-            return []
-
         return [
             Send(
                 "worker",
-                WorkerState(
-                    prompt = state.prompt,
-                    chat = state.chat,
-                    dimension = dimension
-                )
+                ST.WorkerState(
+                    prompt=state.prompt,
+                    chat=state.chat,
+                    dimension=dimension,
+                ),
             )
-            for dimension in dimensions
+            for dimension in state.dimensions
         ]
 
     except Exception as e:
-        logger.error(f"error found in route_worker node : {e}")
-        return [
-            Send(
-                "worker",
-                WorkerState(
-                    prompt="",
-                    chat="",
-                    dimension={
-                        "dimension_name": "",
-                        "dimension_description": ""
-                    }                   
-                )
-            )
-        ]
+        logger.exception("Error while creating worker tasks.")
+        raise RuntimeError("Failed to route workers.") from e
 
-def worker(state : WorkerState) -> AgentState:
+
+def worker(state : ST.WorkerState) -> ST.AgentState:
     """
     perform a evaluation every single dimension base and return evalution result list.
     """
@@ -103,11 +85,8 @@ def worker(state : WorkerState) -> AgentState:
 
         llm = get_llm()
         
-        if not llm:
-            raise ValueError("LLM service is not available.")
-        
-        worker_prompt = prompt_worker(state.prompt,state.chat,state.dimension['dimension_name'],state.dimension["dimension_description"])
-        structured_llm = llm.with_structured_output(WorkerResponse)
+        worker_prompt = PM.prompt_worker(state.prompt,state.chat,state.dimension['dimension_name'],state.dimension["dimension_description"])
+        structured_llm = llm.with_structured_output(ST.WorkerResponse)
         result = structured_llm.invoke(worker_prompt)
 
         # -> if llm change a in dimenssion name then , replce with original 
@@ -118,14 +97,14 @@ def worker(state : WorkerState) -> AgentState:
         }
 
     except Exception as e:
-        logger.error(f"Error in worker_DB_researcher: {e}")
-        worker_result = WorkerLlmResponseDict(
+        logger.error(f"Error in Worker: {e}")
+        worker_result = ST.WorkerLlmResponseDict(
             reason=f"Worker execution failed: {str(e)}",
             chat_issue=[],
             prompt_issue=[],
             recommended_prompt_improvements=""
         )
-        result = WorkerResponse (
+        result = ST.WorkerResponse (
             dimension = state.dimension['dimension_name'],
             worker_llm_response = worker_result,
             benchmarkScore = 0 
@@ -134,33 +113,38 @@ def worker(state : WorkerState) -> AgentState:
             "worker_output" : [result]
         }
 
-def aggregator(state : AgentState) -> AgentState:
+def aggregator(state: ST.AgentState) -> ST.AgentState:
     """
-    recive all worker output and make full evalution response summary.
+    Receive all worker outputs and generate the final evaluation summary.
     """
-    logger.info("Node:aggregator")
-    try :
-        if not state.prompt or not state.chat :
-            raise ValueError(f"{state.response}")
+    logger.info("Node: aggregator")
 
-        if len(state.worker_output)==0:
-            raise ValueError("Worker List is empty")
-        
+    if not state.prompt:
+        raise ValueError("Prompt cannot be empty.")
+
+    if not state.chat:
+        raise ValueError("Chat cannot be empty.")
+
+    if not state.worker_output:
+        raise ValueError("Worker output is empty.")
+    
+    try:
         llm = get_llm()
 
-        if not llm:
-            raise ValueError("LLM service is not available.")
-
-        aggregator_prompt = prompt_aggregator(state.worker_output)
-        structured_llm = llm.with_structured_output(AggregatorResponse)
+        aggregator_prompt = PM.prompt_aggregator(state.worker_output)
+        structured_llm = llm.with_structured_output(ST.AggregatorResponse)
         result = structured_llm.invoke(aggregator_prompt)
 
         return {
-            'response' : result.aggregator_llm_response
+            "response": result.aggregator_llm_response
         }
-    except Exception as e:
-        logger.error(f"Error in Aggregator node : {e}")
 
-        return {
-            'response' : f"{e}"
-        }
+    except TimeoutError as e:
+        raise TimeoutError("Aggregator request timed out.") from e
+
+    except (ConnectionError, ValueError):
+        raise
+
+    except Exception as e:
+        logger.exception("Aggregator node failed.")
+        raise RuntimeError("Failed to generate evaluation summary.") from e

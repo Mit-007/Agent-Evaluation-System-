@@ -6,11 +6,9 @@ def create_evaluation_tracking(
     input_chat: str,
     output_response : dict
 ):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -35,6 +33,9 @@ def create_evaluation_tracking(
         conn.commit()
         return tracking
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()
@@ -45,11 +46,9 @@ def create_evaluation_tracking(
 
 
 def get_tracking_by_id(tracking_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -62,6 +61,9 @@ def get_tracking_by_id(tracking_id: int):
 
         return cur.fetchone()
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch evaluation tracking: {e}")
 
@@ -70,11 +72,9 @@ def get_tracking_by_id(tracking_id: int):
 
 
 def get_tracking_by_agent_id(agent_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -88,6 +88,9 @@ def get_tracking_by_agent_id(agent_id: int):
 
         return cur.fetchall()
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch agent evaluation history: {e}")
 
@@ -96,11 +99,9 @@ def get_tracking_by_agent_id(agent_id: int):
 
 
 def get_latest_tracking(agent_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -115,6 +116,9 @@ def get_latest_tracking(agent_id: int):
 
         return cur.fetchone()
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch latest evaluation tracking: {e}")
 
@@ -123,11 +127,9 @@ def get_latest_tracking(agent_id: int):
 
 
 def delete_tracking(tracking_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -143,6 +145,9 @@ def delete_tracking(tracking_id: int):
 
         return deleted_tracking
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()

@@ -1,46 +1,53 @@
 from app.db.connection import get_db_connection,release_db_connection
+from psycopg2.extras import execute_values
 
-def assign_dimension_to_project(project_id: int, dimension_id: int):
+def assign_dimensions_to_project_in_bulk(project_id: int, dimension_ids: list[int]):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
 
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
-        
-        cur.execute(
-            """
+        query = """
             INSERT INTO project_dimensions (
                 project_id,
                 dimension_id
             )
-            VALUES (%s, %s)
+            VALUES %s
             RETURNING *;
-            """,
-            (
-                project_id,
-                dimension_id
-            )
+        """
+
+        values = [
+            (project_id, dimension_id)
+            for dimension_id in dimension_ids
+        ]
+
+        execute_values(
+            cur,
+            query,
+            values
         )
 
-        result = cur.fetchone()
+        result = cur.fetchall()
+
         conn.commit()
+
         return result
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()
-        raise Exception(f"Failed to assign dimension to project: {e}")
+
+        raise Exception(f"Failed to assign dimensions to project: {e}")
 
     finally:
         release_db_connection(conn, cur)
 
-
 def get_dimensions_by_project_id(project_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -59,6 +66,9 @@ def get_dimensions_by_project_id(project_id: int):
 
         return cur.fetchall()
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch project dimensions: {e}")
 

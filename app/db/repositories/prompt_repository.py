@@ -1,11 +1,9 @@
 from app.db.connection import get_db_connection,release_db_connection
 
 def get_latest_prompt(agent_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -19,6 +17,9 @@ def get_latest_prompt(agent_id: int):
         )
         return cur.fetchone()
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch latest prompt: {e}")
 
@@ -26,11 +27,9 @@ def get_latest_prompt(agent_id: int):
         release_db_connection(conn, cur)
 
 def get_latest_prompt_version(agent_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -49,6 +48,9 @@ def get_latest_prompt_version(agent_id: int):
         
         return result[0]
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch latest prompt version: {e}")
 
@@ -57,11 +59,9 @@ def get_latest_prompt_version(agent_id: int):
 
 
 def get_prompt_count(agent_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -75,6 +75,9 @@ def get_prompt_count(agent_id: int):
         result = cur.fetchone()
         return result[0]
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch prompt count: {e}")
 
@@ -83,13 +86,20 @@ def get_prompt_count(agent_id: int):
 
 
 def create_new_prompt(agent_id: int, prompt: str):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
-        version = get_latest_prompt_version(agent_id) + 1
+        cur.execute(
+            """
+            SELECT version FROM prompt
+            WHERE agent_id = %s
+            ORDER BY version DESC LIMIT 1;
+            """,
+            (agent_id,)
+        )
+        row = cur.fetchone()
+        version = (row[0] + 1) if row else 1
 
         cur.execute(
             """
@@ -109,6 +119,9 @@ def create_new_prompt(agent_id: int, prompt: str):
 
         return new_prompt
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()
@@ -118,11 +131,9 @@ def create_new_prompt(agent_id: int, prompt: str):
         release_db_connection(conn, cur)
 
 def get_prompts_by_agent_id(agent_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -136,6 +147,9 @@ def get_prompts_by_agent_id(agent_id: int):
 
         return cur.fetchall()
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch prompts: {e}")
 
@@ -144,11 +158,9 @@ def get_prompts_by_agent_id(agent_id: int):
 
 
 def get_prompt_by_id(prompt_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -161,6 +173,9 @@ def get_prompt_by_id(prompt_id: int):
 
         return cur.fetchone()
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         raise Exception(f"Failed to fetch prompt: {e}")
 
@@ -169,11 +184,9 @@ def get_prompt_by_id(prompt_id: int):
 
 
 def update_prompt_by_id(prompt_id: int, prompt: str):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -190,6 +203,9 @@ def update_prompt_by_id(prompt_id: int, prompt: str):
 
         return updated_prompt
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()
@@ -200,11 +216,9 @@ def update_prompt_by_id(prompt_id: int, prompt: str):
 
 
 def delete_prompt_by_id(prompt_id: int):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
-
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
         
         cur.execute(
             """
@@ -220,6 +234,9 @@ def delete_prompt_by_id(prompt_id: int):
 
         return deleted_prompt
 
+    except ConnectionError:
+        raise
+    
     except Exception as e:
         if conn:
             conn.rollback()

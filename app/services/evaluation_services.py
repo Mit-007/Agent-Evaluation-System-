@@ -1,7 +1,7 @@
 from app.db.repositories.prompt_repository import get_latest_prompt
 from app.db.repositories.project_dimension_repository import get_dimensions_by_project_id
 from app.db.repositories.evaluation_tracking_repository import create_evaluation_tracking
-from app.db.repositories.dimension_result_repository import create_dimension_result
+from app.db.repositories.dimension_result_repository import create_dimension_results_bulk
 from app.agent.agent import EvalAgent
 from app.core.logger import logger
 import json
@@ -30,12 +30,12 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
         prompt_data = get_latest_prompt(agent_id)
 
         if prompt_data is None:
-            raise Exception(f"No prompt found for agent_id={agent_id}")
+            raise ValueError(f"No prompt found for agent_id={agent_id}")
 
         dimensions = get_dimensions_by_project_id(project_id)
 
         if not dimensions:
-            raise Exception(f"No dimensions found for project_id={project_id}")
+            raise ValueError(f"No dimensions found for project_id={project_id}")
 
         #  --> list of dimension with description for graph input 
         dim_list = []
@@ -78,7 +78,7 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
         # part 3 : Manage a graph result and store in database:
         # ============
 
-        # --> indicate the total score 
+        # --> indicate the Average score 
         overall_score = 0
 
         # --> list of all worker output convert into json from pydantic model
@@ -88,9 +88,11 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
             overall_score += worker.benchmarkScore
             dimensions_result.append(worker.model_dump())
 
+        overall_score = overall_score / len(result["worker_output"]) if len(result["worker_output"]) > 0 else 0
+
         #  --> dict for store result in db, before store convert into json
         output_response = {
-            "score": overall_score / len(result["worker_output"]) if len(result["worker_output"]) > 0 else 0,
+            "score": overall_score,
             "overall_assessment_summary": result["response"],
             "dimensions_result": dimensions_result,
         }
@@ -101,17 +103,17 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
 
         #  --> list of benchmark score of dimensions
         benchmark_scores = []
+        dimension_results = []
 
         for output in result["worker_output"]:
             if output.dimension == '' or output.dimension not in dim_dict:
                 continue 
 
-            #  --> store single dimension result in DB(Table : dimension_results) 
-            create_dimension_result(
-                tracking_data[0], # Tracking_id
-                dim_dict[output.dimension],
-                output.benchmarkScore
-            )
+            dimension_results.append({
+                "tracking_id": tracking_data[0],
+                "dimension_id": dim_dict[output.dimension],
+                "score": output.benchmarkScore,
+            })
 
             benchmark_scores.append(
                 {
@@ -119,6 +121,10 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
                     "score": output.benchmarkScore
                 }
             )
+        
+        #  --> store single dimension result in DB(Table : dimension_results) 
+        if dimension_results:
+            create_dimension_results_bulk(dimension_results)
 
         return {
             "benchmark_score": benchmark_scores,
@@ -127,8 +133,10 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
             "overall_score": overall_score
         }
 
+    except (ValueError, ConnectionError,TimeoutError,RuntimeError):
+        logger.error("Evaluation validation failed.")
+        raise
+
     except Exception as e:
-        logger.exception("Evaluation failed")
-        return {
-            "error" : f"Failed to perform evaluation: {e}"
-        }
+        logger.error("Unexpected error while performing evaluation.")
+        raise RuntimeError("Failed to perform evaluation. {e}") from e

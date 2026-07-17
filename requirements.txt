@@ -1,9 +1,12 @@
-psycopg2-binary
-python-dotenv
-langchain
-langgraph
-langchain-google-genai
 fastapi
 uvicorn
 pydantic
+
+psycopg2-binary
+python-dotenv
+
+langchain
+langgraph
+langchain-google-genai
+
 streamlit

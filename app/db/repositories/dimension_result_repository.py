@@ -1,38 +1,49 @@
 from app.db.connection import get_db_connection,release_db_connection
+from psycopg2.extras import execute_values
 
-def create_dimension_result(tracking_id: int, dimension_id: int, score: int):
+def create_dimension_results_bulk(dimension_results_list):
+    conn = cur = None
     try:
         conn, cur = get_db_connection()
 
-        if conn is None or cur is None:
-            raise Exception("Unable to connect to the database.")
-        
-        cur.execute(
-            """
+        query = """
             INSERT INTO dimension_results (
                 tracking_id,
                 dimension_id,
                 score
             )
-            VALUES (%s, %s, %s)
+            VALUES %s
             RETURNING *;
-            """,
-            (
-                tracking_id,
-                dimension_id,
-                score
-            )
-        )
+        """
 
-        new_dimension_result = cur.fetchone()
+        values = [
+            (
+                result["tracking_id"],
+                result["dimension_id"],
+                result["score"]
+            )
+            for result in dimension_results_list
+        ]
+
+        if not values:
+            return []
+
+        execute_values(cur, query, values)
+
+        inserted_dimension_results = cur.fetchall()
+
         conn.commit()
 
-        return new_dimension_result
+        return inserted_dimension_results
+
+    except ConnectionError:
+        raise
 
     except Exception as e:
         if conn:
             conn.rollback()
-        raise Exception(f"Failed to create dimension result: {e}")
+        raise Exception(f"Failed to create dimension results: {e}")
 
     finally:
-        release_db_connection(conn, cur)
+        if conn:
+            release_db_connection(conn, cur)
