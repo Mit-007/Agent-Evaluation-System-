@@ -4,7 +4,7 @@ load_dotenv()
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 LLM_MODEL_NAME = os.getenv("LLM_MODEL_NAME")
-TEMPERATURE = os.getenv("TEMPERATURE",0)
+TEMPERATURE = os.getenv("TEMPERATURE","0")
 
 DB_HOST = os.getenv("HOST")
 DB_PORT = os.getenv("PORT")
