@@ -137,4 +137,4 @@ def perform_evalution(project_id: int, agent_id: int, chat: str):
 
     except Exception as e:
         logger.error("Unexpected error while performing evaluation.")
-        raise RuntimeError(f"Failed to perform evaluation. {e}") from e
+        raise RuntimeError("Failed to perform evaluation.") from e

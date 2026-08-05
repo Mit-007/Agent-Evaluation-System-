@@ -23,10 +23,8 @@ def create_dimensions_bulk(dimensions_list):
             for dim in dimensions_list
         ]
         
-        execute_values(cur, query, values)
-
-        inserted_dimensions = cur.fetchall()
-
+        inserted_dimensions = execute_values(cur,query,values,fetch=True)
+        
         conn.commit()
 
         return inserted_dimensions

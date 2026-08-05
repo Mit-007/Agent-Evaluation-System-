@@ -20,13 +20,7 @@ def assign_dimensions_to_project_in_bulk(project_id: int, dimension_ids: list[in
             for dimension_id in dimension_ids
         ]
 
-        execute_values(
-            cur,
-            query,
-            values
-        )
-
-        result = cur.fetchall()
+        result = execute_values(cur,query,values,fetch=True)
 
         conn.commit()
 

@@ -28,9 +28,7 @@ def create_dimension_results_bulk(dimension_results_list):
         if not values:
             return []
 
-        execute_values(cur, query, values)
-
-        inserted_dimension_results = cur.fetchall()
+        inserted_dimension_results = execute_values(cur, query, values ,fetch=True)
 
         conn.commit()
 
