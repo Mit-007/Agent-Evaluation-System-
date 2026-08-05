@@ -11,19 +11,28 @@ def set_dimensions(project_id: int, payload: SetDimensions):
     set a list of dimensions for given project.
     """
     try:
+        if not payload.dimensions_list:
+            raise HTTPException(
+                status_code=400,
+                detail="Please provide at least one dimension."
+            )
+
         new_dimensions = DR.create_dimensions_bulk(payload.dimensions_list)
+
         id_list = []
         for dim in new_dimensions:
             id_list.append(dim[0])
+
         PDR.assign_dimensions_to_project_in_bulk(project_id,id_list)
+
         return {
             "message": "Set all dimensions for the given project.",
-            "list_of_all_project_dimensions": new_dimensions
+            "list_of_all_new_project_dimensions": new_dimensions
         }
 
     except HTTPException:
         raise
-
+    
     except ConnectionError as e:
         raise HTTPException(status_code=503,detail=str(e))
     

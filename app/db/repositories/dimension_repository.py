@@ -22,9 +22,6 @@ def create_dimensions_bulk(dimensions_list):
             )
             for dim in dimensions_list
         ]
-
-        if not values:
-            return []
         
         execute_values(cur, query, values)
 
@@ -43,8 +40,7 @@ def create_dimensions_bulk(dimensions_list):
         raise Exception(f"Failed to create dimensions: {e}")
 
     finally:
-        if conn:
-            release_db_connection(conn, cur)
+        release_db_connection(conn, cur)
 
 def update_dimension_description(dimension_id: int, dimension_description: str):
     conn = cur = None
