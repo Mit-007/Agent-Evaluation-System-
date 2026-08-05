@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import requests
 
 # =========================
@@ -62,20 +61,18 @@ if menu == "Run New Evaluation":
         if agent_id and chat_input:
             try:
                 result = run_evaluation(agent_id, chat_input)
-                if "error" in result:
-                    raise Exception(f"Found Error : {result['error']}")
                 st.success("Evaluation started successfully!")
                 for dict in result['benchmark_score']:
                     filled = "█" * dict['score']
                     st.write(f"**{dict['dimension']}**")
                     st.write(f"{filled}  **{dict['score']}/10**")
-                st.success(f"Overall Score :{result['overall_score']}/{(len(result['benchmark_score']))*10}")
+                st.success(f"Overall Score: {result['overall_score']:.2f}")
                 st.header("✅ Response")
                 st.subheader("Overall Assessment")
                 st.markdown(result["response"])
                 st.header("✅ Detailed Evaluation Result") 
                 for out in result["dimensions_results"]:
-                    with st.expander(f"📌 {out["dimension"]}", expanded=False):
+                    with st.expander(f"📌 {out['dimension']}", expanded=False):
                         st.metric("Benchmark Score", out["benchmarkScore"])
                         st.markdown("**Reason**")
                         st.write(out["worker_llm_response"]["reason"])
@@ -124,9 +121,9 @@ elif menu == "View Evaluation Result":
                 st.write("Prompt_ID : ",result.get("prompt_id",""))
                 st.write("Chat : ",result.get("chat",""))
                 st.header("✅ Detailed Evaluation Result")
-                st.write("Score : ",result.get("score","")) 
+                st.write("Score : ",result['output_response']["score"]) 
                 for out in result['output_response']["dimensions_result"]:
-                    with st.expander(f"📌 {out["dimension"]}", expanded=False):
+                    with st.expander(f"📌 {out['dimension']}", expanded=False):
                         st.metric("Benchmark Score", out["benchmarkScore"])
                         st.markdown("**Reason**")
                         st.write(out["worker_llm_response"]["reason"])
@@ -209,7 +206,7 @@ elif menu == "View latest Evaluation of Agent":
                 st.write("Prompt_ID : ",result.get("prompt_id",""))
                 st.write("Chat : ",result.get("chat",""))
                 st.header("✅ Detailed Evaluation Result")
-                st.write("Score : ",result.get("score","")) 
+                st.write("Score : ",result['output_response']["score"]) 
                 for out in result['output_response']["dimensions_result"]:
                     with st.expander(f"📌 {out["dimension"]}", expanded=False):
                         st.metric("Benchmark Score", out["benchmarkScore"])

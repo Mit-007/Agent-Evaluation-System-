@@ -3,10 +3,11 @@ from app.core.config import GOOGLE_API_KEY, LLM_MODEL_NAME,TEMPERATURE
 from app.core.logger import logger
 
 def get_llm():
-    try:
-        if not GOOGLE_API_KEY:
+     
+    if not GOOGLE_API_KEY:
             raise ValueError("GOOGLE_API_KEY is missing. Please set it in your .env file.")
-
+    
+    try:
         llm = ChatGoogleGenerativeAI(
             model=LLM_MODEL_NAME,
             temperature=float(TEMPERATURE)
@@ -16,4 +17,4 @@ def get_llm():
     
     except Exception as e:
         logger.error(f"Failed to initialize LLM: {e}")
-        return  None
+        raise ConnectionError(f"LLM service is unavailable: {e}") from e

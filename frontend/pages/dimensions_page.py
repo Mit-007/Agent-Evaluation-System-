@@ -89,7 +89,7 @@ if menu == "Set Project Dimensions":
 
                 st.write(result['message'])
 
-                data = result['list_of_all_project_dimensions']
+                data = result['list_of_all_new_project_dimensions']
                 if isinstance(data, list):
                     st.table(data)
                 else:
