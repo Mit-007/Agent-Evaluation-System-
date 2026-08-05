@@ -1,4 +1,5 @@
 from app.db.connection import get_db_connection,release_db_connection
+from psycopg2.extras import Json
 
 def create_evaluation_tracking(
     agent_id: int,
@@ -25,7 +26,7 @@ def create_evaluation_tracking(
                 agent_id,
                 prompt_id,
                 input_chat,
-                output_response
+                Json(output_response)
             )
         )
 
@@ -121,37 +122,6 @@ def get_latest_tracking(agent_id: int):
     
     except Exception as e:
         raise Exception(f"Failed to fetch latest evaluation tracking: {e}")
-
-    finally:
-        release_db_connection(conn, cur)
-
-
-def delete_tracking(tracking_id: int):
-    conn = cur = None
-    try:
-        conn, cur = get_db_connection()
-        
-        cur.execute(
-            """
-            DELETE FROM evaluation_tracking
-            WHERE tracking_id = %s
-            RETURNING *;
-            """,
-            (tracking_id,)
-        )
-
-        deleted_tracking = cur.fetchone()
-        conn.commit()
-
-        return deleted_tracking
-
-    except ConnectionError:
-        raise
-    
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        raise Exception(f"Failed to delete evaluation tracking: {e}")
 
     finally:
         release_db_connection(conn, cur)

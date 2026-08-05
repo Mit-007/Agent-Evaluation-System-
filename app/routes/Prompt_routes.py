@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.db.repositories import prompt_repository as PR
+from app.db.repositories.agent_repository import get_agent_by_id
 from app.models import prompt_routes_model as PM
 
 router = APIRouter(prefix="", tags=["Prompt Routes"])
@@ -8,6 +9,9 @@ router = APIRouter(prefix="", tags=["Prompt Routes"])
 @router.post("/agents/{agent_id}/prompts")
 def create_prompt(agent_id: int, payload: PM.PromptCreate):
     try:
+        if get_agent_by_id(agent_id) is None:
+            raise HTTPException(status_code=404, detail=f"Agent ID {agent_id} not found.")
+
         result = PR.create_new_prompt(agent_id, payload.prompt)
         return {
             "prompt_id" : result[0],
@@ -15,6 +19,9 @@ def create_prompt(agent_id: int, payload: PM.PromptCreate):
             "prompt" : result[2],
             "version" : result[3]
         }
+
+    except HTTPException:
+            raise
 
     except ConnectionError as e:
         raise HTTPException(status_code=503,detail=str(e))
@@ -28,7 +35,7 @@ def view_all_prompt(agent_id: int):
     try:
         result = PR.get_prompts_by_agent_id(agent_id)
 
-        if result is None:
+        if not result:
             raise HTTPException(
                 status_code=404,
                 detail=f"No prompts found for agent with ID {agent_id}."
@@ -112,7 +119,7 @@ def update_prompt(prompt_id: int, payload: PM.PromptUpdate):
         if result is None:
             raise HTTPException(
                 status_code=404,
-                detail=f"Agent with ID {prompt_id} not found."
+                detail=f"Prompt with ID {prompt_id} not found."
             )
 
         return {
@@ -140,7 +147,7 @@ def delete_prompt(prompt_id: int):
         if result is None:
             raise HTTPException(
                 status_code=404,
-                detail=f"Agent with ID {prompt_id} not found."
+                detail=f"prompt with ID {prompt_id} not found."
             )
 
         return {

@@ -4,10 +4,9 @@ from app.db.repositories.evaluation_tracking_repository import create_evaluation
 from app.db.repositories.dimension_result_repository import create_dimension_results_bulk
 from app.agent.agent import EvalAgent
 from app.core.logger import logger
-import json
 import uuid
 
-def performe_evalution(project_id: int, agent_id: int, chat: str):
+def perform_evalution(project_id: int, agent_id: int, chat: str):
     """
     Perform an evaluation of the given agent, based on the chat and prompt.
     First, fetch the prompt and dimensions from the database.
@@ -96,10 +95,9 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
             "overall_assessment_summary": result["response"],
             "dimensions_result": dimensions_result,
         }
-        json_output = json.dumps(output_response)
 
         # --> store full evaluation result into DB(Table : evaluation_tracking)
-        tracking_data = create_evaluation_tracking(agent_id,prompt_data[0],chat,json_output)
+        tracking_data = create_evaluation_tracking(agent_id,prompt_data[0],chat,output_response)
 
         #  --> list of benchmark score of dimensions
         benchmark_scores = []
@@ -139,4 +137,4 @@ def performe_evalution(project_id: int, agent_id: int, chat: str):
 
     except Exception as e:
         logger.error("Unexpected error while performing evaluation.")
-        raise RuntimeError("Failed to perform evaluation. {e}") from e
+        raise RuntimeError(f"Failed to perform evaluation. {e}") from e

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.db.repositories import dimension_repository as DR
 from app.db.repositories import project_dimension_repository as PDR
+from app.db.repositories.project_repository import get_project_by_id
 from app.models.dimension_routes_model import SetDimensions,UpdateDimensions
 
 router = APIRouter(prefix="", tags=["Dimensions Routes"])
@@ -11,6 +12,9 @@ def set_dimensions(project_id: int, payload: SetDimensions):
     set a list of dimensions for given project.
     """
     try:
+        if get_project_by_id(project_id) is None:
+            raise HTTPException(status_code=404, detail=f"project ID {project_id} not found.")
+        
         if not payload.dimensions_list:
             raise HTTPException(
                 status_code=400,

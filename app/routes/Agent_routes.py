@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.db.repositories import agent_repository as AR
+from app.db.repositories.project_repository import get_project_by_id
 from app.models import agent_routes_model as AM
 
 router = APIRouter(prefix="", tags=["Agent Routes"])
@@ -8,6 +9,9 @@ router = APIRouter(prefix="", tags=["Agent Routes"])
 @router.post("/projects/{project_id}/agents")
 def create_agent(project_id: int, payload: AM.AgentCreate):
     try:
+        if get_project_by_id(project_id) is None:
+            raise HTTPException(status_code=404, detail=f"project ID {project_id} not found.")
+        
         result = AR.create_new_agent(payload.agent_name, project_id)
 
         return {
@@ -15,6 +19,9 @@ def create_agent(project_id: int, payload: AM.AgentCreate):
             "agent_name": result[1],
             "project_id": result[2]
         }
+
+    except HTTPException:
+            raise
     
     except ConnectionError as e:
         raise HTTPException(status_code=503,detail=str(e))
@@ -28,11 +35,20 @@ def view_all_agent(project_id: int):
     try:
         result = AR.get_agents_by_project_id(project_id)
 
+        if not result:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No Agents found for project with ID {project_id}."
+            )
+
         return {
             "columns": ["Agent_ID", "Agent_Name", "Project_ID"],
             "rows": result
         }
 
+    except HTTPException:
+        raise
+    
     except ConnectionError as e:
         raise HTTPException(status_code=503,detail=str(e))
 

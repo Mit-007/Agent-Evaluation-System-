@@ -159,10 +159,7 @@ def get_project_id_by_agent_id(agent_id: int):
 
         result = cur.fetchone()
 
-        if result is None:
-            raise Exception(f"No agent found with agent_id: {agent_id}")
-
-        return result[0]
+        return result[0] if result else None
 
     except ConnectionError:
         raise

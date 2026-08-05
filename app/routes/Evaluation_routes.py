@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.models.evaluation_model import EvaluationRun
-from app.services.evaluation_services import performe_evalution
+from app.services.evaluation_services import perform_evalution
 from app.db.repositories import evaluation_tracking_repository as ETR
 from app.db.repositories.agent_repository import get_project_id_by_agent_id
 
@@ -15,10 +15,10 @@ def run_new_evaluation(payload: EvaluationRun):
         if not project_id:
             raise HTTPException(
                 status_code=404,
-                detail=f"Project not found."
+                detail=f"Project not found, for gievn agent id."
             )
 
-        result = performe_evalution(project_id,payload.agent_id,payload.chat)
+        result = perform_evalution(project_id,payload.agent_id,payload.chat)
 
         return result
 

@@ -3,6 +3,7 @@ from app.core.logger import logger
 from app.agent.utils import state as ST
 from app.services.llm_services import get_llm
 from app.services import prompt_evalAgent as PM
+from app.core.constants import BENCHMARK_SCORE_LOWER_LIMIT
 
 def orchestrator(state:ST.AgentState) ->ST.AgentState:
     logger.info("Node: orchestrator")
@@ -107,7 +108,7 @@ def worker(state : ST.WorkerState) -> ST.AgentState:
         result = ST.WorkerResponse (
             dimension = state.dimension['dimension_name'],
             worker_llm_response = worker_result,
-            benchmarkScore = 0 
+            benchmarkScore = BENCHMARK_SCORE_LOWER_LIMIT 
         )
         return{
             "worker_output" : [result]

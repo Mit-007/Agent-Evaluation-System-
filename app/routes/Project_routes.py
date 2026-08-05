@@ -27,7 +27,7 @@ def view_all_project():
         result = PR.list_projects()
 
         return {
-            "columns": ["Project_ID", "Project_Name", "Status"],
+            "columns": ["Project_ID", "Project_Name", "Created_At"],
             "rows": result
         }
 
@@ -71,7 +71,7 @@ def update_project(project_id: int, payload: PM.ProjectNameUpdate):
         if result is None:
             raise HTTPException(
                 status_code=404,
-                detail=f"Agent with ID {project_id} not found."
+                detail=f"project with ID {project_id} not found."
             )
 
         return {
@@ -98,7 +98,7 @@ def delete_project(project_id: int):
         if result is None:
             raise HTTPException(
                 status_code=404,
-                detail=f"Agent with ID {project_id} not found."
+                detail=f"update with ID {project_id} not found."
             )
 
         return {

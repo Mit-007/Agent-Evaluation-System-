@@ -26,64 +26,6 @@ def get_latest_prompt(agent_id: int):
     finally:
         release_db_connection(conn, cur)
 
-def get_latest_prompt_version(agent_id: int):
-    conn = cur = None
-    try:
-        conn, cur = get_db_connection()
-        
-        cur.execute(
-            """
-            SELECT version
-            FROM prompt
-            WHERE agent_id = %s
-            ORDER BY version DESC
-            LIMIT 1;
-            """,
-            (agent_id,)
-        )
-        result = cur.fetchone()
-
-        if result is None:
-            return 0
-        
-        return result[0]
-
-    except ConnectionError:
-        raise
-    
-    except Exception as e:
-        raise Exception(f"Failed to fetch latest prompt version: {e}")
-
-    finally:
-        release_db_connection(conn, cur)
-
-
-def get_prompt_count(agent_id: int):
-    conn = cur = None
-    try:
-        conn, cur = get_db_connection()
-        
-        cur.execute(
-            """
-            SELECT COUNT(*) AS prompt_count
-            FROM prompt
-            WHERE agent_id = %s;
-            """,
-            (agent_id,)
-        )
-
-        result = cur.fetchone()
-        return result[0]
-
-    except ConnectionError:
-        raise
-    
-    except Exception as e:
-        raise Exception(f"Failed to fetch prompt count: {e}")
-
-    finally:
-        release_db_connection(conn, cur)
-
 
 def create_new_prompt(agent_id: int, prompt: str):
     conn = cur = None
